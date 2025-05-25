@@ -131,7 +131,7 @@
         <!-- Code Section: Météo -->
         <section id="code-meteo" class="code-section">
             <h2 class="mb-4"><i class="bi bi-cloud-sun-fill me-2"></i> Code pour l'Analyse Climatique</h2>
-            <p>Ce script utilise Pandas pour traiter les données météorologiques de Marseille (2024-2025) et Plotly pour générer des graphiques interactifs (températures, précipitations, vent, humidité). Les résultats sont disponibles dans l'<a href="meteo_marseille.html" class="text-primary">analyse des données climatiques</a>, qui illustre l'impact de ces conditions sur les risques environnementaux</p>
+            <p>Ce script utilise Pandas pour traiter les données climatiques de Marseille (2024-2025) et Plotly pour générer des graphiques interactifs (températures, précipitations, vent, humidité). Les résultats sont disponibles dans l'<a href="meteo_marseille.html" class="text-primary">analyse des données climatiques</a>, qui illustre l'impact de ces conditions sur les risques environnementaux</p>
             <button class="copy-btn" onclick="copyCode('code-meteo')">Copier</button>
             <pre><code id="code-meteo">
 import pandas as pd
@@ -402,7 +402,7 @@ print("L'export a été lancé. Vous pouvez vérifier la progression dans la sec
         <!-- Code Section: Géospatiale -->
         <section id="code-geospatiale" class="code-section">
             <h2 class="mb-4"><i class="bi bi-geo-alt-fill me-2"></i> Code pour l'Analyse Géospatiale</h2>
-            <p>Ce script utilise Google Earth Engine pour calculer du NDVI et identifier les zones brûlées, avec geemap pour la visualisation. Les résultats, incluant les cartes des zones affectées, sont disponibles dans l'<a href="index.html" class="text-primary">analyse géospatiale</a>. Ce travail est complémentaire à l'<a href="meteo_marseille.html" class="text-primary">analyse climatique</a>, qui explore les conditions climatiques </p>
+            <p> calculer du NDVI, avec geemap pour la visualisation. Les résultats sont disponibles dans l'<a href="index.html" class="text-primary">analyse géospatiale</a>. Ce travail est complémentaire à l'<a href="meteo_marseille.html" class="text-primary">analyse climatique</a>, qui explore les conditions climatiques </p>
             <button class="copy-btn" onclick="copyCode('code-geospatiale')">Copier</button>
             <pre><code id="code-geospatiale">
 import geemap
@@ -500,7 +500,7 @@ Map
 <!-- Code Section: NDVI -->
 <section id="code-ndvi" class="code-section">
     <h2 class="mb-4"><i class="bi bi-leaf me-2"></i> Code pour le Calcul NDVI</h2>
-    <p>Ce script utilise Google Earth Engine pour calculer l'Indice de Végétation par Différence Normalisée (NDVI) afin d'évaluer l'évolution de la couverture végétale dans la région PACA entre 2004 (Landsat 5) et 2024 (Sentinel-2). Il génère des visualisations comparatives, incluant la différence NDVI, et sauvegarde les résultats sous forme d'images. Ce travail complète l'<a href="index.html" class="text-primary">analyse géospatiale</a> en fournissant une évaluation quantitative de la santé végétale.</p>
+    <p>Ce script utilise Google Earth Engine pour calculer l'Indice de Végétation par Différence Normalisée (NDVI) afin d'évaluer l'évolution de la couverture végétale entre 2004 (Landsat 5) et 2024 (Sentinel-2). Il génère des visualisations comparatives, incluant la différence NDVI, et sauvegarde les résultats sous forme d'images. Ce travail complète l'<a href="index.html" class="text-primary">analyse géospatiale</a> en fournissant une évaluation quantitative de la santé végétale.</p>
     <button class="copy-btn" onclick="copyCode('code-ndvi')">Copier</button>
     <pre><code id="code-ndvi">
 import geemap
