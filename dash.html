@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Climatique National | France</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --secondary-color: #2a5298;
+            --accent-color: #4a90e2;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 6px 12px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            box-shadow: var(--shadow-md);
+            padding: 0.75rem 1rem;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            padding: 1.5rem;
+            height: calc(100vh - 100px);
+            transition: var(--transition);
+            overflow-y: auto;
+            position: sticky;
+            top: 80px;
+        }
+
+        .sidebar-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            background: #ffffff;
+            transition: var(--transition);
+            margin-bottom: 1.5rem;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+            padding: 1rem 1.25rem;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .map-container {
+            height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chart-container {
+            height: 200px;
+            position: relative;
+        }
+
+        .data-highlight {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin: 0.5rem 0;
+        }
+
+        .indicator-card {
+            text-align: center;
+            padding: 1.5rem 1rem;
+        }
+
+        .indicator-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+        }
+
+        .tooltip-inner {
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .marker-icon {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+        }
+
+        .marker-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+
+        .legend {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            font-size: 0.875rem;
+        }
+
+        .legend h6 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--dark-color);
+        }
+
+        .form-select {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            box-shadow: none;
+        }
+
+        .accordion-button {
+            font-weight: 500;
+            border-radius: 8px !important;
+        }
+
+        .accordion-item {
+            margin-bottom: 0.75rem;
+            border-radius: 8px !important;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+            font-size: 0.875rem;
+        }
+
+        .footer p {
+            margin-bottom: 0.25rem;
+        }
+
+        .source-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            z-index: 1000;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-content {
+            padding: 1.5rem 0;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            padding: 0.75rem 1.25rem;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--secondary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            background: transparent;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 280px;
+                height: 100vh;
+                z-index: 999;
+                transform: translateX(-100%);
+                padding-top: 80px;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.5s ease-in-out;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        /* Credits Banner Styling */
+.credits-banner {
+    background: linear-gradient(135deg, #2c3e50, #3498db); /* Subtle gradient background */
+    padding: 20px 0;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif; /* Modern, clean font */
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+    transition: all 0.3s ease;
+}
+
+.credits-banner .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.credits-banner span {
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+.credits-banner strong {
+    font-weight: 700;
+    color: #f1c40f; /* Accent color for names */
+    transition: color 0.3s ease;
+}
+
+.credits-banner .academic-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15); /* Subtle badge background */
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    margin-left: 10px;
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.credits-banner .academic-badge:hover {
+    transform: translateY(-2px); /* Subtle lift on hover */
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.credits-banner:hover strong {
+    color: #ffffff; /* Name color change on hover */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .credits-banner span {
+        font-size: 1rem;
+        display: block;
+    }
+    .credits-banner .academic-badge {
+        margin: 10px auto;
+    }
+}
+/* Footer Styling */
+.footer {
+    background: linear-gradient(135deg, #1a252f, #2c3e50); /* Matches credits banner gradient */
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    padding: 50px 0 30px;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.footer .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer h5 {
+    color: #f1c40f; /* Accent color for headings */
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+}
+
+.footer h5:hover {
+    color: #ffffff; /* Hover effect for headings */
+}
+
+.footer p, .footer a {
+    color: #d1d1d1;
+    transition: color 0.3s ease;
+}
+
+.footer a:hover {
+    color: #f1c40f; /* Accent color on hover */
+    text-decoration: none;
+}
+
+.footer .small {
+    font-size: 0.9rem;
+}
+
+.footer .bi {
+    color: #f1c40f; /* Accent color for icons */
+}
+
+.footer .ratio iframe {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.footer .ratio iframe:hover {
+    transform: translateY(-3px); /* Subtle lift on hover */
+}
+
+.footer hr {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.footer .btn-outline-light {
+    border-color: #f1c40f;
+    color: #f1c40f;
+    transition: all 0.3s ease;
+}
+
+.footer .btn-outline-light:hover {
+    background: #f1c40f;
+    color: #1a252f;
+    border-color: #f1c40f;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .footer h5 {
+        font-size: 1.2rem;
+    }
+    .footer .text-md-end, .footer .text-md-start {
+        text-align: center;
+    }
+    .footer .btn-sm {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+<!-- Barre de navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <i class="bi bi-globe-europe-africa me-2"></i>
+            <span>Dashboard Climatique National</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#map-section"><i class="bi bi-map me-1"></i> Carte</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#analytics-section"><i class="bi bi-graph-up me-1"></i> Analyses</a>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="exportDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-download me-1"></i> Exporter
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+                        <li><button class="dropdown-item" onclick="exportData('csv')"><i class="bi bi-file-earmark-spreadsheet me-2"></i> CSV</button></li>
+                        <li><button class="dropdown-item" onclick="exportData('json')"><i class="bi bi-file-code me-2"></i> JSON</button></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><button class="dropdown-item" onclick="exportData('pdf')"><i class="bi bi-file-pdf me-2"></i> PDF</button></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal"><i class="bi bi-info-circle me-1"></i> À propos</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html"><i class="bi bi-binoculars"></i> Carto_Espèces</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+ <!-- Bannière des crédits -->
+   <div class="credits-banner">
+    <div class="container">
+        <span>Réalisé par <strong>Ameth Samb</strong> | Sous la direction de <strong>Sébastien Bridier</strong> 
+            <span class="academic-badge">Master Géomatique et Modélisation Spatiale</span>
+        </span>
+    </div>
+</div>
+
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle d-lg-none" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h3 class="mb-3"><i class="bi bi-funnel me-2"></i> Filtres et Indicateurs</h3>
+                </div>
+
+                <div class="filter-group">
+                    <label for="regionSelect" class="form-label">Région</label>
+                    <select id="regionSelect" class="form-select mb-3">
+                        <option value="">Toutes les régions</option>
+                        <option value="Île-de-France">Île-de-France</option>
+                        <option value="Provence-Alpes-Côte d'Azur">Provence-Alpes-Côte d'Azur</option>
+                        <option value="Auvergne-Rhône-Alpes">Auvergne-Rhône-Alpes</option>
+                        <option value="Occitanie">Occitanie</option>
+                        <option value="Pays de la Loire">Pays de la Loire</option>
+                        <option value="Grand Est">Grand Est</option>
+                        <option value="Nouvelle-Aquitaine">Nouvelle-Aquitaine</option>
+                        <option value="Hauts-de-France">Hauts-de-France</option>
+                        <option value="Bretagne">Bretagne</option>
+                    </select>
+                    <label for="citySelect" class="form-label">Ville</label>
+                    <select id="citySelect" class="form-select">
+                        <option value="">Sélectionnez une ville</option>
+                    </select>
+                </div>
+
+                <h4 class="mb-3 mt-4"><i class="bi bi-thermometer-half me-2"></i>Données climatiques</h4>
+                <div class="row">
+                    <div class="col-md-6 col-lg-12">
+                        <div class="card indicator-card">
+                            <i class="bi bi-thermometer-sun indicator-icon"></i>
+                            <h5 class="card-title">Température moyenne</h5>
+                            <p id="avgTemp" class="data-highlight">12.5°C</p>
+                            <p class="text-muted small">Moyenne annuelle</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-12">
+                        <div class="card indicator-card">
+                            <i class="bi bi-cloud-rain indicator-icon"></i>
+                            <h5 class="card-title">Précipitations</h5>
+                            <p id="avgPrecip" class="data-highlight">800 mm</p>
+                            <p class="text-muted small">Par an</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-12">
+                        <div class="card indicator-card">
+                            <i class="bi bi-brightness-high indicator-icon"></i>
+                            <h5 class="card-title">Ensoleillement</h5>
+                            <p id="avgSun" class="data-highlight">2,000 h</p>
+                            <p class="text-muted small">Par an</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="mb-3 mt-4"><i class="bi bi-satellite me-2"></i>Données satellitaires</h4>
+                <div class="row">
+                    <div class="col-md-6 col-lg-12">
+                        <div class="card indicator-card">
+                            <i class="bi bi-tree-fill indicator-icon"></i>
+                            <h5 class="card-title">NDVI</h5>
+                            <p id="avgNDVI" class="data-highlight">0.60</p>
+                            <p class="text-muted small">Indice de végétation</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-12">
+                        <div class="card indicator-card">
+                            <i class="bi bi-thermometer-high indicator-icon"></i>
+                            <h5 class="card-title">Temp. surface</h5>
+                            <p id="avgLST" class="data-highlight">15.0°C</p>
+                            <p class="text-muted small">Moyenne annuelle</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-12">
+                        <div class="card indicator-card">
+                            <i class="bi bi-cloud-fog2 indicator-icon"></i>
+                            <h5 class="card-title">Indice qualité air</h5>
+                            <p id="avgAQI" class="data-highlight">50</p>
+                            <p class="text-muted small">AQI moyen</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="mb-3 mt-4"><i class="bi bi-people-fill me-2"></i>Données démographiques</h4>
+                <div class="row">
+                    <div class="col-md-6 col-lg-12">
+                        <div class="card indicator-card">
+                            <i class="bi bi-people indicator-icon"></i>
+                            <h5 class="card-title">Population</h5>
+                            <p id="population" class="data-highlight">2,148,327</p>
+                            <p class="text-muted small">Nombre d'habitants</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-12">
+                        <div class="card indicator-card">
+                            <i class="bi bi-person-plus indicator-icon"></i>
+                            <h5 class="card-title">Densité</h5>
+                            <p id="density" class="data-highlight">21,564 hab/km²</p>
+                            <p class="text-muted small">Habitants par km²</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="mb-3 mt-4"><i class="bi bi-calendar-week me-2"></i>Prévisions (7 jours)</h4>
+                <div class="accordion" id="forecastAccordion"></div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9 main-content">
+                <!-- Map Section -->
+                <section id="map-section" class="mb-5 slide-in-left">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h2 class="mb-0"><i class="bi bi-map me-2"></i> Carte Interactive des Données Climatiques</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="map" class="map-container">
+                                <div class="legend">
+                                    <h6><i class="bi bi-layers me-1"></i> Couches</h6>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="ndviLayer" checked>
+                                        <label class="form-check-label" for="ndviLayer">NDVI</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="lstLayer" checked>
+                                        <label class="form-check-label" for="lstLayer">Temp. surface</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="aqiLayer" checked>
+                                        <label class="form-check-label" for="aqiLayer">Qualité air</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analytics Section -->
+                <section id="analytics-section" class="mb-5">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <ul class="nav nav-tabs card-header-tabs" id="analyticsTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="temp-tab" data-bs-toggle="tab" data-bs-target="#temp-tab-pane" type="button" role="tab" aria-controls="temp-tab-pane" aria-selected="true">
+                                        <i class="bi bi-thermometer-half me-1"></i> Températures
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="precip-tab" data-bs-toggle="tab" data-bs-target="#precip-tab-pane" type="button" role="tab" aria-controls="precip-tab-pane" aria-selected="false">
+                                        <i class="bi bi-moisture me-1"></i> Précipitations
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="ndvi-tab" data-bs-toggle="tab" data-bs-target="#ndvi-tab-pane" type="button" role="tab" aria-controls="ndvi-tab-pane" aria-selected="false">
+                                        <i class="bi bi-tree me-1"></i> NDVI
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content" id="analyticsTabContent">
+                                <div class="tab-pane fade show active" id="temp-tab-pane" role="tabpanel" aria-labelledby="temp-tab" tabindex="0">
+                                    <div class="chart-container">
+                                        <canvas id="temperatureChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="precip-tab-pane" role="tabpanel" aria-labelledby="precip-tab" tabindex="0">
+                                    <div class="chart-container">
+                                        <canvas id="precipitationChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="ndvi-tab-pane" role="tabpanel" aria-labelledby="ndvi-tab" tabindex="0">
+                                    <div class="chart-container">
+                                        <canvas id="ndviChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Comparative Analysis Section -->
+                <section id="comparison-section" class="mb-5 fade-in">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h2 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i> Analyse Comparative</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <h5 class="mb-3">Comparaison des Températures</h5>
+                                    <div class="chart-container" style="height: 250px;">
+                                        <canvas id="comparisonTempChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <h5 class="mb-3">Comparaison des Précipitations</h5>
+                                    <div class="chart-container" style="height: 250px;">
+                                        <canvas id="comparisonPrecipChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="alert alert-info mt-3">
+                                <i class="bi bi-info-circle me-2"></i> Les données comparatives permettent d'analyser les variations climatiques entre différentes villes.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+   <!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <!-- Student Information -->
+            <div class="col-lg-4 mb-4">
+                <h5 class="text-uppercase mb-4">
+                    <i class="bi bi-person-badge me-2"></i> Informations étudiantes
+                </h5>
+                <div class="d-flex align-items-start mb-3">
+                    <i class="bi bi-mortarboard fs-4 me-3"></i>
+                    <div>
+                        <h6 class="mb-0">Ameth Samb</h6>
+                        <p class="small mb-0">Master Géomatique et Modélisation Spatiale</p>
+                        <p class="small text-muted">Promotion 2024-2025</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-geo-alt fs-4 me-3"></i>
+                    <div>
+                        <h6 class="mb-0">Localisation</h6>
+                        <p class="small mb-0">Marseille, France</p>
+                        <p class="small text-muted">Aix-Marseille Université</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marseille Map -->
+            <div class="col-lg-4 mb-4">
+                <h5 class="text-uppercase mb-4">
+                    <i class="bi bi-geo me-2"></i> Localisation Marseille
+                </h5>
+                <div class="ratio ratio-16x9">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d185912.72405217227!2d5.24084475!3d43.2803051!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12c9bf4344da5333%3A0x40819a5fd970220!2sMarseille!5e0!3m2!1sfr!2sfr!4v1715870000000!5m2!1sfr!2sfr"
+                            style="border:0; border-radius: 8px;"
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+
+            <!-- Contact and Links -->
+            <div class="col-lg-4 mb-4">
+                <h5 class="text-uppercase mb-4">
+                    <i class="bi bi-send me-2"></i> Contact
+                </h5>
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <a href="mailto:ameth.samb@etu.univ-amu.fr" class="text-decoration-none">
+                            <i class="bi bi-envelope me-2"></i> ameth.samb@etu.univ-amu.fr
+                        </a>
+                    </li>
+                    </li>
+                    <li>
+                        <a href="https://www.univ-amu.fr/"
+                           class="text-decoration-none" target="_blank">
+                            <i class="bi bi-book me-2"></i> Formation Master Géomatique
+                        </a>
+                    </li>
+                </ul>
+                <div class="mt-4">
+                    <a href="#" class="btn btn-outline-light btn-sm me-2">
+                        <i class="bi bi-download me-1"></i> 
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> 
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <!-- Bottom Section -->
+        <div class="row">
+            <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                <p class="small mb-0">
+                    <i class="bi bi-c-circle me-1"></i> 2025 Ameth Samb - Travail académique Master Géomatique
+                </p>
+                <p class="small text-muted mt-1">Dernière mise à jour: <span id="lastUpdate">01/05/2025 15:30</span></p>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <p class="small text-muted mb-0">
+                    Sources: Météo France
+                </p>
+                <a href="#top" class="small me-3">
+                    <i class="bi bi-arrow-up-circle me-1"></i> Retour en haut
+                </a>
+                <a href="#" class="small me-3">Mentions légales</a>
+                <a href="#" class="small">Confidentialité</a>
+            </div>
+        </div>
+    </div>
+</footer>
+    <!-- About Modal -->
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aboutModalLabel"><i class="bi bi-info-circle me-2"></i> À propos du Dashboard</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Ce tableau de bord climatique national fournit une visualisation interactive des données météorologiques et satellitaires pour les principales villes françaises.</p>
+                    <p><strong>Fonctionnalités :</strong></p>
+                    <ul>
+                        <li>Visualisation cartographique interactive</li>
+                        <li>Analyse des tendances climatiques</li>
+                        <li>Comparaison entre différentes régions</li>
+                        <li>Export des données pour analyse</li>
+                    </ul>
+                    <p class="mb-0"><strong>Version :</strong> 2.1.0</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+
+        // Données climatiques et satellitaires par ville
+        const cityData = {
+            "Paris": {
+                region: "Île-de-France",
+                coords: [48.8566, 2.3522],
+                avgTemp: 12.5,
+                avgPrecip: 800,
+                avgSun: 2000,
+                avgNDVI: 0.60,
+                avgLST: 15.0,
+                avgAQI: 50,
+                population: 2148327,
+                density: 21564,
+                tempMonthly: [4.5, 5.2, 8.5, 11.5, 15.0, 18.5, 20.5, 20.0, 16.5, 12.0, 7.5, 5.0],
+                precipMonthly: [55, 50, 50, 45, 60, 55, 60, 55, 50, 60, 55, 60],
+                ndviMonthly: [0.55, 0.56, 0.58, 0.60, 0.62, 0.64, 0.63, 0.62, 0.60, 0.58, 0.56, 0.55],
+                forecast: [
+                    { day: "Lundi", temp: 10, precip: 5, icon: "bi-cloud-rain", description: "Pluies éparses" },
+                    { day: "Mardi", temp: 9, precip: 10, icon: "bi-cloud-drizzle", description: "Bruine" },
+                    { day: "Mercredi", temp: 11, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Jeudi", temp: 8, precip: 15, icon: "bi-cloud-rain", description: "Pluie modérée" },
+                    { day: "Vendredi", temp: 10, precip: 0, icon: "bi-cloud", description: "Nuageux" },
+                    { day: "Samedi", temp: 12, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Dimanche", temp: 9, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" }
+                ]
+            },
+            "Marseille": {
+                region: "Provence-Alpes-Côte d'Azur",
+                coords: [43.2965, 5.3698],
+                avgTemp: 16.8,
+                avgPrecip: 515,
+                avgSun: 2900,
+                avgNDVI: 0.45,
+                avgLST: 20.5,
+                avgAQI: 40,
+                population: 870329,
+                density: 3600,
+                tempMonthly: [8.5, 9.2, 11.8, 14.5, 18.5, 22.8, 25.5, 25.0, 21.5, 17.0, 12.2, 9.3],
+                precipMonthly: [48, 45, 42, 60, 42, 26, 14, 32, 62, 86, 52, 53],
+                ndviMonthly: [0.40, 0.42, 0.45, 0.48, 0.50, 0.52, 0.50, 0.48, 0.46, 0.44, 0.42, 0.40],
+                forecast: [
+                    { day: "Lundi", temp: 17, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Mardi", temp: 16, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" },
+                    { day: "Mercredi", temp: 18, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Jeudi", temp: 15, precip: 10, icon: "bi-cloud-rain", description: "Pluie légère" },
+                    { day: "Vendredi", temp: 17, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Samedi", temp: 16, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Dimanche", temp: 15, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" }
+                ]
+            },
+            "Lyon": {
+                region: "Auvergne-Rhône-Alpes",
+                coords: [45.7640, 4.8357],
+                avgTemp: 13.0,
+                avgPrecip: 820,
+                avgSun: 2100,
+                avgNDVI: 0.58,
+                avgLST: 16.0,
+                avgAQI: 45,
+                population: 522228,
+                density: 10500,
+                tempMonthly: [4.0, 5.0, 8.5, 11.5, 15.5, 19.0, 21.5, 21.0, 17.0, 12.5, 7.5, 4.5],
+                precipMonthly: [60, 55, 50, 55, 70, 65, 60, 65, 60, 70, 65, 60],
+                ndviMonthly: [0.53, 0.54, 0.56, 0.58, 0.60, 0.62, 0.61, 0.60, 0.58, 0.56, 0.54, 0.53],
+                forecast: [
+                    { day: "Lundi", temp: 12, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" },
+                    { day: "Mardi", temp: 11, precip: 10, icon: "bi-cloud-rain", description: "Pluie légère" },
+                    { day: "Mercredi", temp: 13, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Jeudi", temp: 10, precip: 15, icon: "bi-cloud-rain", description: "Pluie modérée" },
+                    { day: "Vendredi", temp: 12, precip: 0, icon: "bi-cloud", description: "Nuageux" },
+                    { day: "Samedi", temp: 14, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Dimanche", temp: 11, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" }
+                ]
+            },
+            "Toulouse": {
+                region: "Occitanie",
+                coords: [43.6047, 1.4442],
+                avgTemp: 14.5,
+                avgPrecip: 720,
+                avgSun: 2200,
+                avgNDVI: 0.55,
+                avgLST: 17.5,
+                avgAQI: 40,
+                population: 493465,
+                density: 4200,
+                tempMonthly: [6.0, 7.0, 9.5, 12.0, 16.0, 20.0, 22.5, 22.0, 18.5, 14.0, 9.0, 6.5],
+                precipMonthly: [60, 55, 50, 60, 65, 60, 40, 45, 50, 60, 55, 60],
+                ndviMonthly: [0.50, 0.51, 0.53, 0.55, 0.57, 0.59, 0.58, 0.57, 0.55, 0.53, 0.51, 0.50],
+                forecast: [
+                    { day: "Lundi", temp: 14, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Mardi", temp: 13, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" },
+                    { day: "Mercredi", temp: 15, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Jeudi", temp: 12, precip: 10, icon: "bi-cloud-rain", description: "Pluie légère" },
+                    { day: "Vendredi", temp: 14, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Samedi", temp: 13, precip: 0, icon: "bi-cloud", description: "Nuageux" },
+                    { day: "Dimanche", temp: 12, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" }
+                ]
+            },
+            "Nice": {
+                region: "Provence-Alpes-Côte d'Azur",
+                coords: [43.7102, 7.2620],
+                avgTemp: 16.5,
+                avgPrecip: 767,
+                avgSun: 2700,
+                avgNDVI: 0.50,
+                avgLST: 21.0,
+                avgAQI: 35,
+                population: 342637,
+                density: 4800,
+                tempMonthly: [8.8, 9.5, 11.7, 14.2, 18.0, 21.8, 24.5, 24.2, 21.0, 17.3, 12.5, 9.7],
+                precipMonthly: [69, 59, 58, 65, 49, 34, 12, 18, 54, 108, 104, 77],
+                ndviMonthly: [0.45, 0.47, 0.50, 0.53, 0.55, 0.57, 0.55, 0.53, 0.51, 0.49, 0.47, 0.45],
+                forecast: [
+                    { day: "Lundi", temp: 16, precip: 2, icon: "bi-cloud-drizzle", description: "Bruine" },
+                    { day: "Mardi", temp: 15, precip: 8, icon: "bi-cloud-rain", description: "Pluie légère" },
+                    { day: "Mercredi", temp: 17, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Jeudi", temp: 14, precip: 12, icon: "bi-cloud-rain", description: "Pluie modérée" },
+                    { day: "Vendredi", temp: 16, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Samedi", temp: 15, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Dimanche", temp: 14, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" }
+                ]
+            },
+            "Nantes": {
+                region: "Pays de la Loire",
+                coords: [47.2184, -1.5536],
+                avgTemp: 12.8,
+                avgPrecip: 850,
+                avgSun: 1900,
+                avgNDVI: 0.62,
+                avgLST: 14.5,
+                avgAQI: 45,
+                population: 323204,
+                density: 4700,
+                tempMonthly: [5.5, 6.0, 8.5, 11.0, 14.5, 17.5, 19.5, 19.0, 16.0, 12.5, 8.0, 6.0],
+                precipMonthly: [80, 70, 60, 50, 60, 50, 45, 50, 60, 80, 80, 85],
+                ndviMonthly: [0.57, 0.58, 0.60, 0.62, 0.64, 0.66, 0.65, 0.64, 0.62, 0.60, 0.58, 0.57],
+                forecast: [
+                    { day: "Lundi", temp: 11, precip: 10, icon: "bi-cloud-rain", description: "Pluie légère" },
+                    { day: "Mardi", temp: 10, precip: 15, icon: "bi-cloud-drizzle", description: "Bruine" },
+                    { day: "Mercredi", temp: 12, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Jeudi", temp: 9, precip: 20, icon: "bi-cloud-rain", description: "Pluie modérée" },
+                    { day: "Vendredi", temp: 11, precip: 0, icon: "bi-cloud", description: "Nuageux" },
+                    { day: "Samedi", temp: 13, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Dimanche", temp: 10, precip: 10, icon: "bi-cloud-drizzle", description: "Bruine" }
+                ]
+            },
+            "Strasbourg": {
+                region: "Grand Est",
+                coords: [48.5734, 7.7521],
+                avgTemp: 11.5,
+                avgPrecip: 700,   
+                avgSun: 1800,
+                avgNDVI: 0.59,
+                avgLST: 14.0,
+                avgAQI: 50,
+                population: 290358,
+                density: 3500,
+                tempMonthly: [3.0, 4.0, 7.5, 11.0, 15.0, 18.0, 20.0, 19.5, 15.5, 11.0, 6.5, 3.5],
+                precipMonthly: [50, 45, 45, 50, 60, 65, 60, 60, 50, 60, 50, 55],
+                ndviMonthly: [0.54, 0.55, 0.57, 0.59, 0.61, 0.63, 0.62, 0.61, 0.59, 0.57, 0.55, 0.54],
+                forecast: [
+                    { day: "Lundi", temp: 9, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" },
+                    { day: "Mardi", temp: 8, precip: 10, icon: "bi-cloud-rain", description: "Pluie légère" },
+                    { day: "Mercredi", temp: 10, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Jeudi", temp: 7, precip: 15, icon: "bi-cloud-rain", description: "Pluie modérée" },
+                    { day: "Vendredi", temp: 9, precip: 0, icon: "bi-cloud", description: "Nuageux" },
+                    { day: "Samedi", temp: 11, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Dimanche", temp: 8, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" }
+                ]
+            },
+            "Bordeaux": {
+                region: "Nouvelle-Aquitaine",
+                coords: [44.8378, -0.5792],
+                avgTemp: 14.0,
+                avgPrecip: 900,
+                avgSun: 2200,
+                avgNDVI: 0.57,
+                avgLST: 16.5,
+                avgAQI: 40,
+                population: 261351,
+                density: 4900,
+                tempMonthly: [6.5, 7.5, 10.0, 12.5, 16.0, 19.5, 21.5, 21.0, 18.0, 14.0, 9.5, 7.0],
+                precipMonthly: [80, 70, 60, 60, 65, 60, 50, 55, 60, 80, 80, 85],
+                ndviMonthly: [0.52, 0.53, 0.55, 0.57, 0.59, 0.61, 0.60, 0.59, 0.57, 0.55, 0.53, 0.52],
+                forecast: [
+                    { day: "Lundi", temp: 13, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" },
+                    { day: "Mardi", temp: 12, precip: 10, icon: "bi-cloud-rain", description: "Pluie légère" },
+                    { day: "Mercredi", temp: 14, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Jeudi", temp: 11, precip: 15, icon: "bi-cloud-rain", description: "Pluie modérée" },
+                    { day: "Vendredi", temp: 13, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Samedi", temp: 12, precip: 0, icon: "bi-cloud", description: "Nuageux" },
+                    { day: "Dimanche", temp: 11, precip: 5, icon: "bi-cloud-drizzle", description: "Bruine" }
+                ]
+            },
+            "Lille": {
+                region: "Hauts-de-France",
+                coords: [50.6292, 3.0573],
+                avgTemp: 11.0,
+                avgPrecip: 750,
+                avgSun: 1700,
+                avgNDVI: 0.61,
+                avgLST: 13.5,
+                avgAQI: 55,
+                population: 234475,
+                density: 4300,
+                tempMonthly: [3.5, 4.0, 7.0, 10.0, 13.5, 16.5, 18.5, 18.0, 15.0, 11.0, 6.5, 4.0],
+                precipMonthly: [65, 60, 55, 50, 60, 65, 60, 60, 55, 65, 65, 70],
+                ndviMonthly: [0.56, 0.57, 0.59, 0.61, 0.63, 0.65, 0.64, 0.63, 0.61, 0.59, 0.57, 0.56],
+                forecast: [
+                    { day: "Lundi", temp: 8, precip: 10, icon: "bi-cloud-rain", description: "Pluie légère" },
+                    { day: "Mardi", temp: 7, precip: 15, icon: "bi-cloud-drizzle", description: "Bruine" },
+                    { day: "Mercredi", temp: 9, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Jeudi", temp: 6, precip: 20, icon: "bi-cloud-rain", description: "Pluie modérée" },
+                    { day: "Vendredi", temp: 8, precip: 0, icon: "bi-cloud", description: "Nuageux" },
+                    { day: "Samedi", temp: 10, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Dimanche", temp: 7, precip: 10, icon: "bi-cloud-drizzle", description: "Bruine" }
+                ]
+            },
+            "Rennes": {
+                region: "Bretagne",
+                coords: [48.1173, -1.6778],
+                avgTemp: 12.0,
+                avgPrecip: 830,
+                avgSun: 1850,
+                avgNDVI: 0.63,
+                avgLST: 14.0,
+                avgAQI: 40,
+                population: 220488,
+                density: 4500,
+                tempMonthly: [5.0, 5.5, 8.0, 10.5, 14.0, 17.0, 19.0, 18.5, 15.5, 12.0, 7.5, 5.5],
+                precipMonthly: [75, 65, 60, 50, 60, 50, 45, 50, 60, 75, 75, 80],
+                ndviMonthly: [0.58, 0.59, 0.61, 0.63, 0.65, 0.67, 0.66, 0.65, 0.63, 0.61, 0.59, 0.58],
+                forecast: [
+                    { day: "Lundi", temp: 10, precip: 10, icon: "bi-cloud-rain", description: "Pluie légère" },
+                    { day: "Mardi", temp: 9, precip: 15, icon: "bi-cloud-drizzle", description: "Bruine" },
+                    { day: "Mercredi", temp: 11, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Jeudi", temp: 8, precip: 20, icon: "bi-cloud-rain", description: "Pluie modérée" },
+                    { day: "Vendredi", temp: 10, precip: 0, icon: "bi-cloud", description: "Nuageux" },
+                    { day: "Samedi", temp: 12, precip: 0, icon: "bi-sun", description: "Ensoleillé" },
+                    { day: "Dimanche", temp: 9, precip: 10, icon: "bi-cloud-drizzle", description: "Bruine" }
+                ]
+            }
+        };
+
+        // Initialisation de la carte
+        const map = L.map('map').setView([46.7, 2.5], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Simulate satellite layers
+        const ndviLayer = L.tileLayer('', { attribution: 'Simulated NDVI Layer', opacity: 0.5 }).addTo(map);
+        const lstLayer = L.tileLayer('', { attribution: 'Simulated LST Layer', opacity: 0.5 }).addTo(map);
+        const aqiLayer = L.tileLayer('', { attribution: 'Simulated AQI Layer', opacity: 0.5 }).addTo(map);
+
+        // Toggle satellite layers
+        document.getElementById('ndviLayer').addEventListener('change', (e) => {
+            if (e.target.checked) map.addLayer(ndviLayer); else map.removeLayer(ndviLayer);
+        });
+        document.getElementById('lstLayer').addEventListener('change', (e) => {
+            if (e.target.checked) map.addLayer(lstLayer); else map.removeLayer(lstLayer);
+        });
+        document.getElementById('aqiLayer').addEventListener('change', (e) => {
+            if (e.target.checked) map.addLayer(aqiLayer); else map.removeLayer(aqiLayer);
+        });
+
+        // Ajout des marqueurs
+        let markers = {};
+        let selectedCities = ['Paris', 'Marseille', 'Lyon']; // Default cities for comparison
+        Object.keys(cityData).forEach(city => {
+            const marker = L.marker(cityData[city].coords, {
+                title: city,
+                icon: L.divIcon({
+                    className: 'marker-icon',
+                    html: `<i class="bi ${selectedCities.includes(city) ? 'bi-geo-alt-fill' : 'bi-geo-alt'}"></i>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30]
+                })
+            }).addTo(map)
+                .bindPopup(`<b>${city}</b><br>${cityData[city].region}<br>Population: ${cityData[city].population.toLocaleString()}<br>Densité: ${cityData[city].density.toLocaleString()} hab/km²`)
+                .bindTooltip(city, { permanent: false, direction: 'top', offset: [0, -15] });
+
+            marker.on('click', () => {
+                updateDashboard(city);
+                // Highlight marker
+                Object.values(markers).forEach(m => {
+                    m._icon.classList.remove('marker-pulse');
+                    m._icon.innerHTML = '<i class="bi bi-geo-alt"></i>';
+                });
+                marker._icon.classList.add('marker-pulse');
+                marker._icon.innerHTML = '<i class="bi bi-geo-alt-fill"></i>';
+
+                // Add to comparison if not already there
+                if (!selectedCities.includes(city)) {
+                    if (selectedCities.length >= 3) selectedCities.shift();
+                    selectedCities.push(city);
+                    updateComparisonCharts();
+                }
+            });
+            markers[city] = marker;
+
+            // Animation d'entrée
+            anime({
+                targets: marker._icon,
+                translateY: [-150, 0],
+                opacity: [0, 1],
+                easing: 'easeOutBounce',
+                duration: 1000,
+                delay: Object.keys(cityData).indexOf(city) * 200
+            });
+        });
+
+        // Contour de la France (GeoJSON simplifié)
+        const franceGeoJSON = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [-5.0, 48.5], [2.0, 51.0], [8.0, 48.0], [7.0, 44.0],
+                    [3.0, 42.0], [-1.0, 43.0], [-5.0, 46.0], [-5.0, 48.5]
+                ]]
+            }
+        };
+        L.geoJSON(franceGeoJSON, {
+            style: { color: '#2a5298', fillOpacity: 0.1, weight: 3 }
+        }).addTo(map).bindPopup("<b>France</b>");
+
+        // Initialisation des graphiques
+        const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+        const precipCtx = document.getElementById('precipitationChart').getContext('2d');
+        const ndviCtx = document.getElementById('ndviChart').getContext('2d');
+        const compTempCtx = document.getElementById('comparisonTempChart').getContext('2d');
+        const compPrecipCtx = document.getElementById('comparisonPrecipChart').getContext('2d');
+
+        const tempChart = new Chart(tempCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+                datasets: [{
+                    label: 'Température moyenne (°C)',
+                    data: cityData["Paris"].tempMonthly,
+                    borderColor: '#ff6384',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 8,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { size: 12 },
+                            boxWidth: 12,
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#2a5298',
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 12 },
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: { font: { size: 10 } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    },
+                    x: {
+                        ticks: { font: { size: 10 } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    }
+                },
+                animation: { duration: 1500, easing: 'easeInOutQuart' }
+            }
+        });
+
+        const precipChart = new Chart(precipCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+                datasets: [{
+                    label: 'Précipitations (mm)',
+                    data: cityData["Paris"].precipMonthly,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: '#36a2eb',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { size: 12 },
+                            boxWidth: 12,
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#2a5298',
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 12 },
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { font: { size: 10 } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    },
+                    x: {
+                        ticks: { font: { size: 10 } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    }
+                },
+                animation: { duration: 1500, easing: 'easeInOutQuart' }
+            }
+        });
+
+        const ndviChart = new Chart(ndviCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+                datasets: [{
+                    label: 'NDVI',
+                    data: cityData["Paris"].ndviMonthly,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 8,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { size: 12 },
+                            boxWidth: 12,
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#2a5298',
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 12 },
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        max: 1,
+                        ticks: { font: { size: 10 } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    },
+                    x: {
+                        ticks: { font: { size: 10 } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    }
+                },
+                animation: { duration: 1500, easing: 'easeInOutQuart' }
+            }
+        });
+
+        // Comparison charts
+        const comparisonTempChart = new Chart(compTempCtx, {
+            type: 'bar',
+            data: {
+                labels: selectedCities,
+                datasets: [{
+                    label: 'Température moyenne annuelle (°C)',
+                    data: selectedCities.map(city => cityData[city].avgTemp),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#2a5298',
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 12 },
+                        padding: 12,
+                        cornerRadius: 8
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        formatter: (value) => `${value}°C`,
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: { font: { size: 10 } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    },
+                    x: {
+                        ticks: { font: { size: 10 } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    }
+                },
+                animation: { duration: 1500, easing: 'easeInOutQuart' }
+            }
+        });
+
+        const comparisonPrecipChart = new Chart(compPrecipCtx, {
+            type: 'bar',
+            data: {
+                labels: selectedCities,
+                datasets: [{
+                    label: 'Précipitations annuelles (mm)',
+                    data: selectedCities.map(city => cityData[city].avgPrecip),
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(255, 206, 86, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#2a5298',
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 12 },
+                        padding: 12,
+                        cornerRadius: 8
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        formatter: (value) => `${value}mm`,
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { font: { size: 10 } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    },
+                    x: {
+                        ticks: { font: { size: 10 } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    }
+                },
+                animation: { duration: 1500, easing: 'easeInOutQuart' }
+            }
+        });
+
+        // Update comparison charts
+        function updateComparisonCharts() {
+            comparisonTempChart.data.labels = selectedCities;
+            comparisonTempChart.data.datasets[0].data = selectedCities.map(city => cityData[city].avgTemp);
+
+            comparisonPrecipChart.data.labels = selectedCities;
+            comparisonPrecipChart.data.datasets[0].data = selectedCities.map(city => cityData[city].avgPrecip);
+
+            comparisonTempChart.update();
+            comparisonPrecipChart.update();
+
+            // Update marker icons
+            Object.keys(markers).forEach(city => {
+                markers[city]._icon.innerHTML = `<i class="bi ${selectedCities.includes(city) ? 'bi-geo-alt-fill' : 'bi-geo-alt'}"></i>`;
+            });
+        }
+
+        // Populate city selector based on region
+        function updateCitySelector(region) {
+            const citySelect = document.getElementById('citySelect');
+            citySelect.innerHTML = '<option value="">Sélectionnez une ville</option>';
+            Object.keys(cityData).forEach(city => {
+                if (!region || cityData[city].region === region) {
+                    citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+                }
+            });
+        }
+
+        // Update forecast accordion
+        function updateForecast(city) {
+            const forecastData = cityData[city].forecast;
+            const accordion = document.getElementById('forecastAccordion');
+            accordion.innerHTML = '';
+            forecastData.forEach((day, index) => {
+                accordion.innerHTML += `
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="forecastHeading${index}">
+                            <button class="accordion-button ${index === 0 ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#forecastCollapse${index}" aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="forecastCollapse${index}">
+                                <i class="bi ${day.icon} me-2"></i> ${day.day}
+                            </button>
+                        </h2>
+                        <div id="forecastCollapse${index}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" aria-labelledby="forecastHeading${index}" data-bs-parent="#forecastAccordion">
+                            <div class="accordion-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>Température:</strong> ${day.temp}°C<br>
+                                        <strong>Précipitations:</strong> ${day.precip} mm
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted">${day.description}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Export data
+        function exportData(format) {
+            const city = document.getElementById('citySelect').value || 'Paris';
+            const data = cityData[city];
+
+            if (format === 'csv') {
+                const csv = [
+                    'Mois,Température (°C),Précipitations (mm),NDVI,Population,Densité',
+                    ...data.tempMonthly.map((temp, i) => [
+                        ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'][i],
+                        temp,
+                        data.precipMonthly[i],
+                        data.ndviMonthly[i],
+                        data.population,
+                        data.density
+                    ].join(','))
+                ].join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${city}_donnees_climatiques.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+            } else if (format === 'json') {
+                const json = JSON.stringify({
+                    ville: city,
+                    region: data.region,
+                    coordonnees: data.coords,
+                    climat: {
+                        temperature_moyenne: data.avgTemp,
+                        precipitations_moyennes: data.avgPrecip,
+                        ensoleillement_moyen: data.avgSun,
+                        temperature_mensuelle: data.tempMonthly,
+                        precipitations_mensuelles: data.precipMonthly
+                    },
+                    satellite: {
+                        ndvi_moyen: data.avgNDVI,
+                        temperature_surface: data.avgLST,
+                        qualite_air: data.avgAQI,
+                        ndvi_mensuel: data.ndviMonthly
+                    },
+                    demographie: {
+                        population: data.population,
+                        densite: data.density
+                    },
+                    previsions: data.forecast
+                }, null, 2);
+                const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${city}_donnees_climatiques.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+            } else if (format === 'pdf') {
+                // Generate PDF report
+                const doc = new jsPDF();
+
+                // Title
+                doc.setFontSize(20);
+                doc.setTextColor(42, 82, 152);
+                doc.text(`Rapport Climatique - ${city}`, 105, 20, { align: 'center' });
+
+                // Subtitle
+                doc.setFontSize(12);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Région: ${data.region} | Dernière mise à jour: ${new Date().toLocaleDateString('fr-FR')}`, 105, 30, { align: 'center' });
+
+                // Add divider
+                doc.setDrawColor(42, 82, 152);
+                doc.setLineWidth(0.5);
+                doc.line(20, 35, 190, 35);
+
+                // Summary section
+                doc.setFontSize(14);
+                doc.setTextColor(42, 82, 152);
+                doc.text('Résumé Climatique', 20, 45);
+
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Température moyenne annuelle: ${data.avgTemp}°C`, 20, 55);
+                doc.text(`Précipitations moyennes annuelles: ${data.avgPrecip} mm`, 20, 60);
+                doc.text(`Ensoleillement moyen annuel: ${data.avgSun} heures`, 20, 65);
+                doc.text(`Indice de végétation (NDVI) moyen: ${data.avgNDVI}`, 20, 70);
+                doc.text(`Population: ${data.population.toLocaleString()} habitants`, 20, 75);
+                doc.text(`Densité: ${data.density.toLocaleString()} hab/km²`, 20, 80);
+
+                // Monthly data section
+                doc.setFontSize(14);
+                doc.setTextColor(42, 82, 152);
+                doc.text('Données Mensuelles', 20, 90);
+
+                // Temperature chart
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                doc.text('Températures mensuelles (°C):', 20, 100);
+                let x = 20;
+                data.tempMonthly.forEach((temp, i) => {
+                    doc.text(`${['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'][i]}: ${temp}°C`, x, 105);
+                    x += 30;
+                    if (x > 170) {
+                        x = 20;
+                        doc.text('', 20, 110); // Move to next line
+                    }
+                });
+
+                // Precipitation chart
+                doc.text('Précipitations mensuelles (mm):', 20, 120);
+                x = 20;
+                data.precipMonthly.forEach((precip, i) => {
+                    doc.text(`${['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'][i]}: ${precip}mm`, x, 125);
+                    x += 30;
+                    if (x > 170) {
+                        x = 20;
+                        doc.text('', 20, 130); // Move to next line
+                    }
+                });
+
+                // Forecast section
+                doc.setFontSize(14);
+                doc.setTextColor(42, 82, 152);
+                doc.text('Prévisions sur 7 jours', 20, 145);
+
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                data.forecast.forEach((day, i) => {
+                    doc.text(`${day.day}: ${day.temp}°C, ${day.precip}mm (${day.description})`, 20, 150 + (i * 5));
+                });
+
+                // Footer
+                doc.setFontSize(8);
+                doc.setTextColor(100, 100, 100);
+                doc.text('Source: Dashboard Climatique National - Ministère de la Transition Écologique', 105, 290, { align: 'center' });
+
+                // Save the PDF
+                doc.save(`${city}_rapport_climatique.pdf`);
+            }
+        }
+
+        // Update dashboard
+        function updateDashboard(city) {
+            const data = cityData[city];
+            if (!data) return;
+
+            // Update indicators with animations
+            anime({
+                targets: '#avgTemp',
+                innerHTML: [parseFloat(document.getElementById('avgTemp').innerHTML) || 0, data.avgTemp],
+                round: 1,
+                easing: 'easeInOutQuad',
+                duration: 800,
+                update: function(anim) {
+                    document.getElementById('avgTemp').innerHTML = anim.animations[0].currentValue.toFixed(1) + '°C';
+                }
+            });
+            anime({
+                targets: '#avgPrecip',
+                innerHTML: [parseFloat(document.getElementById('avgPrecip').innerHTML) || 0, data.avgPrecip],
+                round: 1,
+                easing: 'easeInOutQuad',
+                duration: 800,
+                update: function(anim) {
+                    document.getElementById('avgPrecip').innerHTML = anim.animations[0].currentValue.toFixed(0) + ' mm';
+                }
+            });
+            anime({
+                targets: '#avgSun',
+                innerHTML: [parseFloat(document.getElementById('avgSun').innerHTML.replace(',', '')) || 0, data.avgSun],
+                round: 1,
+                easing: 'easeInOutQuad',
+                duration: 800,
+                update: function(anim) {
+                    document.getElementById('avgSun').innerHTML = anim.animations[0].currentValue.toLocaleString('fr-FR') + ' h';
+                }
+            });
+            anime({
+                targets: '#avgNDVI',
+                innerHTML: [parseFloat(document.getElementById('avgNDVI').innerHTML) || 0, data.avgNDVI],
+                round: 2,
+                easing: 'easeInOutQuad',
+                duration: 800,
+                update: function(anim) {
+                    document.getElementById('avgNDVI').innerHTML = anim.animations[0].currentValue.toFixed(2);
+                }
+            });
+            anime({
+                targets: '#avgLST',
+                innerHTML: [parseFloat(document.getElementById('avgLST').innerHTML) || 0, data.avgLST],
+                round: 1,
+                easing: 'easeInOutQuad',
+                duration: 800,
+                update: function(anim) {
+                    document.getElementById('avgLST').innerHTML = anim.animations[0].currentValue.toFixed(1) + '°C';
+                }
+            });
+            anime({
+                targets: '#avgAQI',
+                innerHTML: [parseFloat(document.getElementById('avgAQI').innerHTML) || 0, data.avgAQI],
+                round: 1,
+                easing: 'easeInOutQuad',
+                duration: 800,
+                update: function(anim) {
+                    document.getElementById('avgAQI').innerHTML = anim.animations[0].currentValue.toFixed(0);
+                }
+            });
+            anime({
+                targets: '#population',
+                innerHTML: [parseFloat(document.getElementById('population').innerHTML.replace(',', '')) || 0, data.population],
+                round: 0,
+                easing: 'easeInOutQuad',
+                duration: 800,
+                update: function(anim) {
+                    document.getElementById('population').innerHTML = anim.animations[0].currentValue.toLocaleString();
+                }
+            });
+            anime({
+                targets: '#density',
+                innerHTML: [parseFloat(document.getElementById('density').innerHTML.replace(',', '')) || 0, data.density],
+                round: 0,
+                easing: 'easeInOutQuad',
+                duration: 800,
+                update: function(anim) {
+                    document.getElementById('density').innerHTML = anim.animations[0].currentValue.toLocaleString() + ' hab/km²';
+                }
+            });
+
+            // Update charts
+            tempChart.data.datasets[0].data = data.tempMonthly;
+            precipChart.data.datasets[0].data = data.precipMonthly;
+            ndviChart.data.datasets[0].data = data.ndviMonthly;
+
+            anime({
+                targets: tempChart.data.datasets[0].data,
+                value: data.tempMonthly,
+                duration: 800,
+                easing: 'easeInOutQuad',
+                onUpdate: () => tempChart.update()
+            });
+            anime({
+                targets: precipChart.data.datasets[0].data,
+                value: data.precipMonthly,
+                duration: 800,
+                easing: 'easeInOutQuad',
+                onUpdate: () => precipChart.update()
+            });
+            anime({
+                targets: ndviChart.data.datasets[0].data,
+                value: data.ndviMonthly,
+                duration: 800,
+                easing: 'easeInOutQuad',
+                onUpdate: () => ndviChart.update()
+            });
+
+            // Update forecast
+            updateForecast(city);
+
+            // Zoom to city
+            map.flyTo(data.coords, 10, { duration: 1.5, easeLinearity: 0.5 });
+
+            // Update selector
+            document.getElementById('citySelect').value = city;
+            document.getElementById('regionSelect').value = data.region;
+
+            // Update comparison if this city is selected
+            if (selectedCities.includes(city)) {
+                updateComparisonCharts();
+            }
+
+            // Animate charts
+            anime({
+                targets: '.chart-container canvas',
+                scale: [0.95, 1],
+                opacity: [0.8, 1],
+                easing: 'easeInOutQuad',
+                duration: 400
+            });
+        }
+
+        // Region filter
+        document.getElementById('regionSelect').addEventListener('change', (e) => {
+            const region = e.target.value;
+            updateCitySelector(region);
+            const firstCity = Object.keys(cityData).find(city => !region || cityData[city].region === region);
+            if (firstCity) updateDashboard(firstCity);
+        });
+
+        // City selector
+        document.getElementById('citySelect').addEventListener('change', (e) => {
+            const city = e.target.value;
+            if (city) {
+                updateDashboard(city);
+                // Highlight marker
+                Object.values(markers).forEach(m => {
+                    m._icon.classList.remove('marker-pulse');
+                    m._icon.innerHTML = '<i class="bi bi-geo-alt"></i>';
+                });
+                markers[city]._icon.classList.add('marker-pulse');
+                markers[city]._icon.innerHTML = '<i class="bi bi-geo-alt-fill"></i>';
+
+                // Add to comparison if not already there
+                if (!selectedCities.includes(city)) {
+                    if (selectedCities.length >= 3) selectedCities.shift();
+                    selectedCities.push(city);
+                    updateComparisonCharts();
+                }
+            }
+        });
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+
+        // Set last update time
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleString('fr-FR');
+
+        // Initialize
+        updateCitySelector('');
+        updateDashboard('Paris');
+        updateComparisonCharts();
+
+        // Initial animations
+        anime({
+            targets: '.card',
+            translateY: [50, 0],
+            opacity: [0, 1],
+            scale: [0.95, 1],
+            delay: anime.stagger(100),
+            easing: 'easeOutElastic(1, 0.8)',
+            duration: 800
+        });
+        anime({
+            targets: '.data-highlight',
+            scale: [0.8, 1],
+            opacity: [0, 1],
+            delay: anime.stagger(100, { start: 300 }),
+            easing: 'easeOutQuad',
+            duration: 600
+        });
+    </script>
+</body>
+</html>

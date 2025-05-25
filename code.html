@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Source - Projet Géomatique</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --accent-color: #3498db;
+            --weather-color: #f39c12;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background-color: var(--primary-color) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .credits-banner {
+            background: linear-gradient(90deg, var(--primary-color) 0%, #34495e 100%);
+            color: white;
+            padding: 12px 0;
+            text-align: center;
+            font-size: 0.95rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .academic-badge {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 0;
+            margin-bottom: 30px;
+        }
+
+        .code-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .code-section pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            max-height: 600px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .copy-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="bi bi-geo-alt-fill me-2"></i>
+                <span>Projet Géomatique</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html"><i class="bi bi-binoculars"></i> Carto_Espèces</a></li>
+                    <li class="nav-item"><a class="nav-link" href="meteo_marseille.html"><i class="bi bi-cloud-sun-fill me-1"></i> Données Météo</a></li>
+                   <li class="nav-item"><a class="nav-link" href="dash.html"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#"><i class="bi bi-code-slash me-1"></i> Code Source</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Credits Banner -->
+    <div class="credits-banner">
+        <div class="container">
+            <span>Réalisé par <strong>Ameth Samb</strong> | Sous la direction de <strong>Sébastien Bridier</strong>
+                <span class="academic-badge">Master Géomatique et Modélisation Spatiale</span></span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <!-- Hero Section -->
+        <div class="hero-section rounded-3 text-center">
+            <h1 class="display-4 fw-bold">Code Source</h1>
+            <p class="lead">Scripts Python pour l'analyse géospatiale  et l'analyse climatique</p>
+        </div>
+
+        <!-- Code Section: Météo -->
+        <section id="code-meteo" class="code-section">
+            <h2 class="mb-4"><i class="bi bi-cloud-sun-fill me-2"></i> Code pour l'Analyse Climatique</h2>
+            <p>Ce script utilise Pandas pour traiter les données météorologiques de Marseille (2024-2025) et Plotly pour générer des graphiques interactifs (températures, précipitations, vent, humidité). Les résultats sont disponibles dans l'<a href="meteo_marseille.html" class="text-primary">analyse des données climatiques</a>, qui illustre l'impact de ces conditions sur les risques environnementaux</p>
+            <button class="copy-btn" onclick="copyCode('code-meteo')">Copier</button>
+            <pre><code id="code-meteo">
+import pandas as pd
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import plotly.express as px
+import plotly.io as pio
+
+# Charger les données
+df = pd.read_csv('/content/sample_data/MENSQ_13_latest-2024-2025.csv', sep=';')
+df.columns = df.columns.str.strip()
+df['ANNEE'] = df['AAAAMM'] // 100
+df['MOIS'] = df['AAAAMM'] % 100
+df['DATE'] = pd.to_datetime(df['AAAAMM'].astype(str) + '01', format='%Y%m%d')
+
+df_meteo = df[['NOM_USUEL', 'LAT', 'LON', 'ALTI', 'DATE', 'ANNEE', 'MOIS',
+               'TX', 'TN', 'TM', 'RR', 'FFM', 'UMM']].copy()
+df_meteo.columns = ['Commune', 'Latitude', 'Longitude', 'Altitude', 'Date',
+                   'Année', 'Mois', 'Temp max', 'Temp min', 'Temp moy',
+                   'Précipitations', 'Vitesse vent', 'Humidité']
+
+# Choisir une commune (exemple)
+commune = 'MARSEILLE'
+
+data = df_meteo[df_meteo["Commune"] == commune].sort_values('Date')
+
+# Graphiques à générer
+figs = []
+
+# 1. Température + Précipitations
+fig1 = make_subplots(specs=[[{"secondary_y": True}]])
+fig1.add_trace(go.Scatter(x=data['Date'], y=data['Temp moy'], name="Température moy (°C)", line=dict(color='red')), secondary_y=False)
+fig1.add_trace(go.Bar(x=data['Date'], y=data['Précipitations'], name="Précipitations (mm)", marker_color='blue', opacity=0.5), secondary_y=True)
+fig1.update_layout(title=f"Température et Précipitations à {commune}", hovermode="x unified")
+figs.append(fig1)
+
+# 2. Vent + Humidité
+fig2 = make_subplots(specs=[[{"secondary_y": True}]])
+fig2.add_trace(go.Scatter(x=data['Date'], y=data['Vitesse vent'], name="Vitesse vent (km/h)", line=dict(color='green')), secondary_y=False)
+fig2.add_trace(go.Scatter(x=data['Date'], y=data['Humidité'], name="Humidité (%)", line=dict(color='purple')), secondary_y=True)
+fig2.update_layout(title=f"Vent et Humidité à {commune}", hovermode="x unified")
+figs.append(fig2)
+
+# 3. Temp Max/Min/Moy
+fig3 = go.Figure()
+fig3.add_trace(go.Scatter(x=data['Date'], y=data['Temp max'], name='Temp Max', line=dict(color='orange')))
+fig3.add_trace(go.Scatter(x=data['Date'], y=data['Temp moy'], name='Temp Moyenne', line=dict(color='red')))
+fig3.add_trace(go.Scatter(x=data['Date'], y=data['Temp min'], name='Temp Min', line=dict(color='blue')))
+fig3.update_layout(title=f"Évolution Températures à {commune}", hovermode="x unified")
+figs.append(fig3)
+
+# 4. Précipitations mensuelles
+df_monthly = data.groupby('Mois')['Précipitations'].sum()
+fig4 = go.Figure(data=[go.Bar(x=df_monthly.index, y=df_monthly.values, marker_color='skyblue')])
+fig4.update_layout(title=f"Précipitations mensuelles totales à {commune}", xaxis_title="Mois", yaxis_title="Précipitations (mm)")
+figs.append(fig4)
+
+# 5. Boxplot température par mois
+fig5 = px.box(data, x='Mois', y='Temp moy', points='all', title=f"Distribution des Températures Moyennes par Mois à {commune}")
+figs.append(fig5)
+
+# 6. Moyennes annuelles
+df_yearly = data.groupby('Année')[['Temp moy', 'Précipitations', 'Vitesse vent', 'Humidité']].mean().reset_index()
+fig6 = go.Figure()
+fig6.add_trace(go.Scatter(x=df_yearly['Année'], y=df_yearly['Temp moy'], name='Temp Moy', line=dict(color='red')))
+fig6.add_trace(go.Scatter(x=df_yearly['Année'], y=df_yearly['Précipitations'], name='Précipitations', line=dict(color='blue')))
+fig6.add_trace(go.Scatter(x=df_yearly['Année'], y=df_yearly['Humidité'], name='Humidité', line=dict(color='purple')))
+fig6.add_trace(go.Scatter(x=df_yearly['Année'], y=df_yearly['Vitesse vent'], name='Vent', line=dict(color='green')))
+fig6.update_layout(title=f"Tendances annuelles moyennes à {commune}")
+figs.append(fig6)
+
+# Export HTML combiné
+html_parts = []
+for i, fig in enumerate(figs):
+    html_parts.append(pio.to_html(fig, include_plotlyjs='cdn', full_html=False, default_width='100%', default_height='600px'))
+
+html_template = f"""
+
+
+
+"""
+
+# Sauvegarde
+with open(f'meteo_{commune.lower()}.html', 'w', encoding='utf-8') as f:
+    f.write(html_template)
+
+print(f"Page HTML exportée : meteo_{commune.lower()}.html")
+            </code></pre>
+        </section>
+      <!-- Code Section: Météo -->
+        <section id="code-meteo" class="code-section">
+            <h2 class="mb-4"><i class="bi bi-cloud-sun-fill me-2"></i> Code pour la cartographie des espèces d'arbres</h2>
+            <p><a href="index.html" class="text-primary">Répartition des Espèces d'Arbres</a></p>
+            <button class="copy-btn" onclick="copyCode('code-meteo')">Copier</button>
+            <pre><code id="code-meteo">
+import ee
+import folium
+from google.colab import output
+from IPython.display import display, HTML
+
+
+# 1. Définir la zone d'étude
+zone_etude = ee.Geometry.Polygon(
+    [[[4.2, 43.0], [4.2, 44.0], [5.9, 44.0], [5.9, 43.0]]], None, False)
+
+# 2. Charger les données Sentinel-2 et les filtrer pour la zone d'étude
+sentinel2 = ee.ImageCollection('COPERNICUS/S2_SR') \
+    .filterBounds(zone_etude) \
+    .filterDate('2022-01-01', '2022-12-31') \
+    .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)) \
+    .select(['B2', 'B3', 'B4', 'B8', 'B11', 'B12'])
+
+# 3. Charger les données Sentinel-1 et les filtrer pour la zone d'étude
+sentinel1 = ee.ImageCollection('COPERNICUS/S1_GRD') \
+    .filterBounds(zone_etude) \
+    .filterDate('2022-01-01', '2022-12-31') \
+    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV')) \
+    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH')) \
+    .select(['VV', 'VH'])
+
+# 4. Fusionner Sentinel-1 et Sentinel-2
+sentinel1_median = sentinel1.median()
+sentinel2_median = sentinel2.median()
+
+# 5. Calculer des indices de végétation (NDVI et EVI)
+ndvi = sentinel2_median.normalizedDifference(['B8', 'B4']).rename('NDVI')
+evi = sentinel2_median.expression(
+    '2.5 * ((NIR - RED) / (NIR + 6 * RED - 7.5 * BLUE + 1))', {
+        'NIR': sentinel2_median.select('B8'),
+        'RED': sentinel2_median.select('B4'),
+        'BLUE': sentinel2_median.select('B2')
+}).rename('EVI')
+
+# 6. Ajouter les indices et Sentinel-1 aux données Sentinel-2
+image_with_indices = sentinel2_median \
+    .addBands(ndvi) \
+    .addBands(evi) \
+    .addBands(sentinel1_median)
+
+# 7. Charger TOUS les points d'inventaire forestier et les points supplémentaires
+points_inventaire = ee.FeatureCollection([
+    # Points forestiers originaux
+    ee.Feature(ee.Geometry.Point([5.38959150326834, 43.5062588945275]), {'Espece': 'Pin_d_Alep'}),
+    ee.Feature(ee.Geometry.Point([5.34023198356701, 43.5076412584949]), {'Espece': 'Pin_d_Alep'}),
+    ee.Feature(ee.Geometry.Point([5.59362182242776, 43.6172318578785]), {'Espece': 'Chene_vert'}),
+    ee.Feature(ee.Geometry.Point([5.51744785153935, 43.5835187839645]), {'Espece': 'Pin_d_Alep'}),
+    ee.Feature(ee.Geometry.Point([5.60546414703028, 43.6078738739266]), {'Espece': 'Chene_vert'}),
+    ee.Feature(ee.Geometry.Point([5.25205116450353, 43.7169178221384]), {'Espece': 'Pin_brutta'}),
+    ee.Feature(ee.Geometry.Point([5.3473306958532, 43.6423566809533]), {'Espece': 'Chene_pubescent'}),
+    ee.Feature(ee.Geometry.Point([5.66882571119885, 43.6329302075705]), {'Espece': 'Chene_vert'}),
+    ee.Feature(ee.Geometry.Point([4.77673093679257, 43.6207517988886]), {'Espece': 'Chene_vert'}),
+    ee.Feature(ee.Geometry.Point([4.70588226067076, 43.7032570948556]), {'Espece': 'Frene_oxyphylle'}),
+    ee.Feature(ee.Geometry.Point([5.23969757983466, 43.4744186654184]), {'Espece': 'Pin_d_Alep'}),
+    ee.Feature(ee.Geometry.Point([4.99594674644635, 43.5436473062703]), {'Espece': 'Pin_d_Alep'}),
+    ee.Feature(ee.Geometry.Point([4.9930346001289, 43.4807731698352]), {'Espece': 'Pin_d_Alep'}),
+    
+    # Nouveaux points supplémentaires
+    ee.Feature(ee.Geometry.Point([5.41517477, 43.32458393]), {'Espece': 'bati'}),
+    ee.Feature(ee.Geometry.Point([5.35359075, 43.35625640]), {'Espece': 'bati'}),
+    ee.Feature(ee.Geometry.Point([5.35183121, 43.37864111]), {'Espece': 'bati'}),
+    ee.Feature(ee.Geometry.Point([5.41033602, 43.26407241]), {'Espece': 'bati'}),
+    ee.Feature(ee.Geometry.Point([5.24559878, 43.43488617]), {'Espece': 'bati'}),
+    ee.Feature(ee.Geometry.Point([5.21590649, 43.41635664]), {'Espece': 'bati'}),
+    ee.Feature(ee.Geometry.Point([5.05160913, 43.41204292]), {'Espece': 'bati'}),
+    ee.Feature(ee.Geometry.Point([5.07129402, 43.50495952]), {'Espece': 'eau'}),
+    ee.Feature(ee.Geometry.Point([5.16279027, 43.43919827]), {'Espece': 'eau'}),
+    ee.Feature(ee.Geometry.Point([4.94108781, 43.35609648]), {'Espece': 'eau'}),
+    ee.Feature(ee.Geometry.Point([4.94108781, 43.37912070]), {'Espece': 'eau'}),
+    ee.Feature(ee.Geometry.Point([5.10384557, 43.43280987]), {'Espece': 'eau'}),
+    ee.Feature(ee.Geometry.Point([5.06513562, 43.47240706]), {'Espece': 'eau'}),
+    ee.Feature(ee.Geometry.Point([5.08361082, 43.45580495]), {'Espece': 'eau'}),
+    ee.Feature(ee.Geometry.Point([5.08097151, 43.49283418]), {'Espece': 'eau'}),
+    ee.Feature(ee.Geometry.Point([4.82676298, 43.55796477]), {'Espece': 'sol_nu'}),
+    ee.Feature(ee.Geometry.Point([4.81629137, 43.55111618]), {'Espece': 'sol_nu'}),
+    ee.Feature(ee.Geometry.Point([5.17360317, 43.59594177]), {'Espece': 'sol_nu'}),
+    ee.Feature(ee.Geometry.Point([5.23416612, 43.58206745]), {'Espece': 'sol_nu'}),
+    ee.Feature(ee.Geometry.Point([5.38648337, 43.60414924]), {'Espece': 'sol_nu'}),
+    ee.Feature(ee.Geometry.Point([5.27032191, 43.55816142]), {'Espece': 'sol_nu'}),
+    ee.Feature(ee.Geometry.Point([5.39042020, 43.34534172]), {'Espece': 'sol_nu'})
+])
+
+# 8. Convertir les noms d'espèces en codes numériques
+especes_codes = ee.Dictionary({
+    'Pin_d_Alep': 0,
+    'Chene_vert': 1,
+    'Pin_brutta': 2,
+    'Chene_pubescent': 3,
+    'Frene_oxyphylle': 4,
+    'bati': 5,
+    'eau': 6,
+    'sol_nu': 7
+})
+
+def add_code_espece(feature):
+    espece = ee.String(feature.get('Espece'))
+    code_espece = ee.Number(especes_codes.get(espece, -1))  # -1 pour les classes inconnues
+    return feature.set('CodeEspece', code_espece)
+
+points_inventaire_codes = points_inventaire.map(add_code_espece)
+
+# 9. Extraire les valeurs des indices pour les points d'inventaire
+training_data = image_with_indices.sampleRegions(
+    collection=points_inventaire_codes,
+    properties=['CodeEspece'],
+    scale=10
+)
+
+# 10. Entraîner un modèle de classification Random Forest
+model = ee.Classifier.smileRandomForest(100).train(
+    features=training_data,
+    classProperty='CodeEspece',
+    inputProperties=['B2', 'B3', 'B4', 'B8', 'B11', 'B12', 'VV', 'VH', 'NDVI', 'EVI']
+)
+
+# 11. Appliquer le modèle pour prédire les espèces
+especes_predites = image_with_indices.classify(model, 'EspecePredite')
+
+# 12. Visualiser la carte
+def add_ee_layer(self, ee_image_object, vis_params, name):
+    map_id_dict = ee.Image(ee_image_object).getMapId(vis_params)
+    folium.raster_layers.TileLayer(
+        tiles=map_id_dict['tile_fetcher'].url_format,
+        attr='Google Earth Engine',
+        name=name,
+        overlay=True,
+        control=True
+    ).add_to(self)
+
+# Ajouter la méthode add_ee_layer à folium.Map
+folium.Map.add_ee_layer = add_ee_layer
+
+# Créer une carte Folium
+my_map = folium.Map(location=[43.55, 5.0], zoom_start=9)
+
+# Paramètres de visualisation
+palette_especes = ['green', 'brown', 'blue', 'red', 'purple', 'gray', 'cyan', 'yellow']
+vis_params = {'min': 0, 'max': 7, 'palette': palette_especes}
+
+# Ajouter la couche de prédiction
+my_map.add_ee_layer(especes_predites.clip(zone_etude), vis_params, 'Espèces prédites')
+
+# Ajouter un contrôle de couche
+folium.LayerControl().add_to(my_map)
+
+# Afficher la carte
+display(my_map)
+
+# Ajouter une légende
+
+'''
+
+my_map.get_root().html.add_child(folium.Element(legend_html))
+
+# 14. Exporter la carte (optionnel)
+task = ee.batch.Export.image.toDrive(
+    image=especes_predites.clip(zone_etude),
+    description='Especes_Predites',
+    scale=10,
+    region=zone_etude,
+    fileFormat='GeoTIFF'
+)
+task.start()
+
+print("L'export a été lancé. Vous pouvez vérifier la progression dans la section 'Tâches' de Earth Engine.")
+
+            </code></pre>
+        </section>
+        <!-- Code Section: Géospatiale -->
+        <section id="code-geospatiale" class="code-section">
+            <h2 class="mb-4"><i class="bi bi-geo-alt-fill me-2"></i> Code pour l'Analyse Géospatiale</h2>
+            <p>Ce script utilise Google Earth Engine pour calculer du NDVI et identifier les zones brûlées, avec geemap pour la visualisation. Les résultats, incluant les cartes des zones affectées, sont disponibles dans l'<a href="index.html" class="text-primary">analyse géospatiale</a>. Ce travail est complémentaire à l'<a href="meteo_marseille.html" class="text-primary">analyse climatique</a>, qui explore les conditions climatiques </p>
+            <button class="copy-btn" onclick="copyCode('code-geospatiale')">Copier</button>
+            <pre><code id="code-geospatiale">
+import geemap
+import ee
+import geopandas as gpd
+
+# Initialiser Earth Engine
+ee.Authenticate()
+ee.Initialize(project="ee-amethsamb")
+
+# Charger la zone d'intérêt (GeoJSON)
+geojson_path = "/content/sample_data/limite_bouches_des_rhone.geojson"
+gdf = gpd.read_file(geojson_path)
+
+if gdf.crs != "EPSG:4326":
+    gdf = gdf.to_crs("EPSG:4326")
+
+roi = geemap.geopandas_to_ee(gdf)
+
+# ------------------ Paramètres généraux ------------------
+
+# Dates
+start_2014 = '2014-07-01'
+end_2014 = '2014-08-31'
+start_2024 = '2024-07-01'
+end_2024 = '2024-08-31'
+
+# ------------------ Image Landsat 8 (2014) ------------------
+
+# Bandes SR (surface reflectance)
+bands_landsat = ['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7']
+
+image_2014 = (ee.ImageCollection("LANDSAT/LC08/C02/T1_L2")
+              .filterDate(start_2014, end_2014)
+              .filterBounds(roi)
+              .filter(ee.Filter.lt('CLOUD_COVER', 20))
+              .median()
+              .select(bands_landsat)
+              .clip(roi))
+
+# ------------------ Image Sentinel-2 (2024) ------------------
+
+bands_sentinel = ['B2', 'B3', 'B4', 'B8', 'B11', 'B12']
+
+image_2024 = (ee.ImageCollection("COPERNICUS/S2_SR")
+              .filterDate(start_2024, end_2024)
+              .filterBounds(roi)
+              .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
+              .median()
+              .select(bands_sentinel)
+              .clip(roi))
+
+# ------------------ Classification non supervisée ------------------
+
+# 2014
+training_2014 = image_2014.sample(region=roi, scale=30, numPixels=5000)
+clusterer_2014 = ee.Clusterer.wekaKMeans(10).train(training_2014)
+classified_2014 = image_2014.cluster(clusterer_2014)
+
+# 2024
+training_2024 = image_2024.sample(region=roi, scale=20, numPixels=5000)
+clusterer_2024 = ee.Clusterer.wekaKMeans(10).train(training_2024)
+classified_2024 = image_2024.cluster(clusterer_2024)
+
+# ------------------ Carte de différence ------------------
+
+diff_image = classified_2024.subtract(classified_2014).rename("Change")
+diff_masked = diff_image.updateMask(diff_image.neq(0))
+
+# ------------------ Affichage ------------------
+
+Map = geemap.Map()
+Map.centerObject(roi, 12)
+
+# Image originale 2024
+Map.addLayer(image_2024, {'bands': ['B4', 'B3', 'B2'], 'min': 0, 'max': 3000}, "Image 2024 (RGB)")
+
+# Classification 2014
+Map.addLayer(classified_2014.randomVisualizer(), {}, "Classification 2014")
+
+# Classification 2024
+Map.addLayer(classified_2024.randomVisualizer(), {}, "Classification 2024")
+
+# Différences
+Map.addLayer(diff_masked, {
+    'min': -9, 'max': 9,
+    'palette': ['white', 'yellow', 'orange', 'red', 'purple']
+}, "Changements entre 2014 et 2024")
+
+Map
+            </code></pre>
+        </section>
+    </div>
+
+<!-- Code Section: NDVI -->
+<section id="code-ndvi" class="code-section">
+    <h2 class="mb-4"><i class="bi bi-leaf me-2"></i> Code pour le Calcul NDVI</h2>
+    <p>Ce script utilise Google Earth Engine pour calculer l'Indice de Végétation par Différence Normalisée (NDVI) afin d'évaluer l'évolution de la couverture végétale dans la région PACA entre 2004 (Landsat 5) et 2024 (Sentinel-2). Il génère des visualisations comparatives, incluant la différence NDVI, et sauvegarde les résultats sous forme d'images. Ce travail complète l'<a href="index.html" class="text-primary">analyse géospatiale</a> en fournissant une évaluation quantitative de la santé végétale.</p>
+    <button class="copy-btn" onclick="copyCode('code-ndvi')">Copier</button>
+    <pre><code id="code-ndvi">
+import geemap
+import ee
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import requests
+from io import BytesIO
+from PIL import Image
+import numpy as np
+import os
+from datetime import datetime
+import time
+
+# Configuration
+OUTPUT_DIR = "results"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+# Load and validate GeoJSON
+def load_geodata(path):
+    try:
+        gdf = gpd.read_file(path)
+        if gdf.empty:
+            raise ValueError("Le GeoJSON est vide")
+        if gdf.crs != "EPSG:4326":
+            gdf = gdf.to_crs("EPSG:4326")
+        return gdf
+    except Exception as e:
+        print(f"Erreur lors du chargement du GeoJSON: {e}")
+        raise
+
+geojson_path = "/content/sample_data/limite_bouches_des_rhone.geojson"
+gdf = load_geodata(geojson_path)
+roi = geemap.geopandas_to_ee(gdf)
+
+# NDVI functions with flexible band selection
+def calculate_ndvi(image, sensor_type):
+    if sensor_type == 'landsat':
+        bands = ['SR_B4', 'SR_B3']  # B4=Red, B3=NIR for Landsat 5
+    elif sensor_type == 'sentinel':
+        available_bands = image.bandNames().getInfo()
+        if 'B8' in available_bands and 'B4' in available_bands:
+            bands = ['B8', 'B4']  # B8=NIR, B4=Red for Sentinel-2
+        elif 'NIR' in available_bands and 'red' in available_bands:
+            bands = ['NIR', 'red']
+        else:
+            raise ValueError(f"Bandes NIR/Red non trouvées. Bandes disponibles: {available_bands}")
+    else:
+        raise ValueError("Type de capteur non supporté")
+
+    if not all(band in image.bandNames().getInfo() for band in bands):
+        missing = [b for b in bands if b not in image.bandNames().getInfo()]
+        raise ValueError(f"Bandes manquantes: {missing}. Bandes disponibles: {image.bandNames().getInfo()}")
+
+    return image.normalizedDifference(bands).rename('NDVI')
+
+# Improved image collection processing with median composite
+def get_best_image(collection, roi, max_cloud_cover=20):
+    try:
+        # Determine cloud cover property name based on collection
+        cloud_property = 'CLOUD_COVER' if 'LANDSAT' in str(collection) else 'CLOUDY_PIXEL_PERCENTAGE'
+        
+        # Filter by cloud cover and date - properly closed parentheses
+        filtered = (collection
+                  .filterBounds(roi)
+                  .filter(ee.Filter.lt(cloud_property, max_cloud_cover)))
+        
+        # Create median composite
+        composite = filtered.median()
+        
+        print(f"Nombre d'images utilisées: {filtered.size().getInfo()}")
+        if filtered.size().getInfo() > 0:
+            avg_cloud = filtered.aggregate_mean(cloud_property).getInfo()
+            print(f"Pourcentage de nuages moyen: {avg_cloud:.2f}%")
+        
+        return composite
+    except Exception as e:
+        print(f"Erreur lors de la création de la composition: {e}")
+        return None
+
+# Get image data with retry mechanism
+def get_image_array(image, vis_params, region, retries=3):
+    for attempt in range(retries):
+        try:
+            url = image.getThumbUrl({
+                'region': region,
+                'dimensions': 1024,
+                'format': 'png',
+                **vis_params
+            })
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            img = Image.open(BytesIO(response.content))
+            return np.array(img)
+        except Exception as e:
+            print(f"Tentative {attempt + 1} échouée: {e}")
+            if attempt == retries - 1:
+                return None
+            time.sleep(5)
+
+# Date ranges
+date_ranges = {
+    'landsat': ('2004-05-01', '2004-11-30'),
+    'sentinel': ('2024-05-01', '2024-11-30')
+}
+
+# Process images
+try:
+    ee.Initialize(project="ee-amethsamb")
+
+    # Landsat 5 (2004)
+    print("\nTraitement de Landsat 5 (2004)...")
+    landsat_col = ee.ImageCollection("LANDSAT/LT05/C02/T1_L2").filterDate(*date_ranges['landsat'])
+    image_2004 = get_best_image(landsat_col, roi)
+    if not image_2004:
+        raise ValueError("Aucune image Landsat 5 trouvée pour 2004")
+    ndvi_2004 = calculate_ndvi(image_2004, 'landsat').clip(roi)
+
+    # Sentinel-2 (2024)
+    print("\nTraitement de Sentinel-2 (2024)...")
+    sentinel_col = ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED").filterDate(*date_ranges['sentinel'])
+    image_2024 = get_best_image(sentinel_col, roi)
+    if not image_2024:
+        raise ValueError("Aucune image Sentinel-2 trouvée pour 2024")
+    ndvi_2024 = calculate_ndvi(image_2024, 'sentinel').clip(roi)
+
+    # Calculate difference
+    ndvi_diff = ndvi_2024.subtract(ndvi_2004).rename('NDVI_diff').clip(roi)
+
+    # Visualization parameters
+    vis_params = {
+        'ndvi': {'min': -0.2, 'max': 1.0, 'palette': ['d63000', 'fafa6e', 'c8f7b0', '82e070', '2e8b57']},
+        'diff': {'min': -1.0, 'max': 1.0, 'palette': ['d73027', 'f7f7f7', '1a9850']}
+    }
+
+    # Get image arrays
+    region = roi.geometry()
+    img_2004 = get_image_array(ndvi_2004, vis_params['ndvi'], region)
+    img_2024 = get_image_array(ndvi_2024, vis_params['ndvi'], region)
+    img_diff = get_image_array(ndvi_diff, vis_params['diff'], region)
+
+    # Create and display plots
+    if all(img is not None for img in [img_2004, img_2024, img_diff]):
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(24, 8))
+
+        def add_colorbar(fig, ax, im, label, ticks):
+            cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+            cbar.set_ticks(ticks)
+            cbar.set_label(label, fontsize=12)
+            return cbar
+
+        # Plot 2004 NDVI
+        im1 = ax1.imshow(img_2004, vmin=-0.2, vmax=1.0)
+        ax1.set_title('NDVI 2004 (Landsat 5)')
+        add_colorbar(fig, ax1, im1, 'NDVI', [-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0])
+        ax1.axis('off')
+
+        # Plot 2024 NDVI
+        im2 = ax2.imshow(img_2024, vmin=-0.2, vmax=1.0)
+        ax2.set_title('NDVI 2024 (Sentinel-2)')
+        add_colorbar(fig, ax2, im2, 'NDVI', [-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0])
+        ax2.axis('off')
+
+        # Plot Difference
+        im3 = ax3.imshow(img_diff, vmin=-1.0, vmax=1.0)
+        ax3.set_title('Différence NDVI (2024 - 2004)')
+        cbar3 = add_colorbar(fig, ax3, im3, 'Différence NDVI', [-1.0, -0.5, 0, 0.5, 1.0])
+        cbar3.ax.set_yticklabels(['Perte importante', 'Perte modérée', 'Stable', 'Gain modéré', 'Gain important'])
+        ax3.axis('off')
+
+        plt.suptitle('Évolution du NDVI dans les Bouches-du-Rhône\nPériode estivale 2004 vs 2024', fontsize=16)
+        plt.tight_layout()
+        
+        # Save and show
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_path = os.path.join(OUTPUT_DIR, f'ndvi_comparison_{timestamp}.png')
+        plt.savefig(output_path, bbox_inches='tight', dpi=300)
+        plt.show()
+        
+        print(f"\nRésultats sauvegardés sous: {output_path}")
+
+except Exception as e:
+    print(f"\nErreur lors du traitement: {e}")
+    raise
+    </code></pre>
+</section>
+
+  <!-- Footer -->
+<footer class="bg-dark text-white pt-5 pb-4">
+    <div class="container">
+        <div class="row">
+            <!-- Informations étudiantes -->
+            <div class="col-lg-4 mb-4">
+                <h5 class="text-uppercase mb-4" style="color: var(--accent-color);">
+                    <i class="bi bi-person-badge"></i> Informations étudiantes
+                </h5>
+                <div class="d-flex align-items-start mb-3">
+                    <i class="bi bi-mortarboard fs-4 me-3" style="color: var(--accent-color);"></i>
+                    <div>
+                        <h6 class="mb-0">Ameth Samb</h6>
+                        <p class="small mb-0">Master Géomatique et Modélisation Spatiale</p>
+                        <p class="small text-muted">Promotion 2024-2025</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-geo-alt fs-4 me-3" style="color: var(--accent-color);"></i>
+                    <div>
+                        <h6 class="mb-0">Localisation</h6>
+                        <p class="small mb-0">Marseille, France</p>
+                        <p class="small text-muted">Aix-Marseille Université</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carte de localisation -->
+            <div class="col-lg-4 mb-4">
+                <h5 class="text-uppercase mb-4" style="color: var(--accent-color);">
+                    <i class="bi bi-geo"></i> Localisation Marseille
+                </h5>
+                <div class="ratio ratio-16x9">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d185912.72405217227!2d5.24084475!3d43.2803051!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12c9bf4344da5333%3A0x40819a5fd970220!2sMarseille!5e0!3m2!1sfr!2sfr!4v1715870000000!5m2!1sfr!2sfr" 
+                            style="border:0; border-radius: 8px;" 
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+
+            <!-- Contact et réseaux -->
+            <div class="col-lg-4 mb-4">
+                <h5 class="text-uppercase mb-4" style="color: var(--accent-color);">
+                    <i class="bi bi-send"></i> Contact
+                </h5>
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <a href="mailto:ameth.samb@etu.univ-amu.fr" class="text-white text-decoration-none">
+                            <i class="bi bi-envelope me-2"></i> ameth.samb@etu.univ-amu.fr
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://formations.univ-amu.fr/fr/master-geomatique-et-modelisation-spatiale" 
+                           class="text-white text-decoration-none" target="_blank">
+                            <i class="bi bi-book me-2"></i> Formation Master Géomatique
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
+
+        <!-- Copyright -->
+        <div class="row">
+            <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                <p class="small mb-0">
+                    &copy; 2024 Ameth Samb - Travail académique Master Géomatique
+                </p>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <a href="#top" class="text-white small me-3">
+                    <i class="bi bi-arrow-up-circle me-1"></i> Retour en haut
+                </a>
+                <a href="#" class="text-white small me-3">Mentions légales</a>
+                <a href="#" class="text-white small">Confidentialité</a>
+            </div>
+        </div>
+    </div>
+</footer>  
+
+<!-- JavaScript for Copy Functionality -->
+    <script>
+        function copyCode(elementId) {
+            const codeElement = document.getElementById(elementId);
+            const text = codeElement.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Code copié dans le presse-papiers !');
+            }).catch(err => {
+                console.error('Erreur lors de la copie : ', err);
+            });
+        }
+    </script>
+</body>
+</html>

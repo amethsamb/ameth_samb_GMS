@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse Climatique - MARSEILLE</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --accent-color: #3498db;
+            --weather-color: #f39c12;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background-color: var(--primary-color) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .credits-banner {
+            background: linear-gradient(90deg, var(--primary-color) 0%, #34495e 100%);
+            color: white;
+            padding: 12px 0;
+            text-align: center;
+            font-size: 0.95rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .academic-badge {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1517457210348-703079e57d4b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 0;
+            margin-bottom: 30px;
+        }
+
+        .weather-card {
+            border-left: 4px solid var(--weather-color);
+            transition: transform 0.3s ease;
+            height: 100%;
+        }
+
+        .weather-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .chart-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        .weather-icon {
+            font-size: 2rem;
+            color: var(--weather-color);
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="bi bi-geo-alt-fill me-2"></i>
+                <span>Projet Géomatique</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html"><i class="bi bi-binoculars"></i> Carto_Espèces</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#"><i class="bi bi-cloud-sun-fill me-1"></i> Données Météo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="dash.html"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="code.html"><i class="bi bi-code-slash me-1"></i> Code Source</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Credits Banner -->
+    <div class="credits-banner">
+        <div class="container">
+            <span>Réalisé par <strong>Ameth Samb</strong> | Sous la direction de <strong>Sébastien Bridier</strong>
+                <span class="academic-badge">Master Géomatique et Modélisation Spatiale</span></span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <!-- Hero Section -->
+        <div class="hero-section rounded-3 text-center">
+            <h1 class="display-4 fw-bold">Données Climatiques</h1>
+            <p class="lead">Analyse des conditions climatiques à Marseille (2024-2025)</p>
+        </div>
+
+        <!-- Charts Section -->
+        <section id="donnees-meteo">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2 class="text-center mb-4"><i class="bi bi-geo-alt-fill me-2"></i> MARSEILLE</h2>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="chart-container weather-card">
+                        <h3><i class="bi bi-thermometer-half weather-icon"></i> Températures</h3>
+                        <div class="chart">
+                            <div id="temp-chart" class="plotly-graph-div" style="height:600px; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="chart-container weather-card">
+                        <h3><i class="bi bi-droplet-half weather-icon"></i> Précipitations</h3>
+                        <div class="chart">
+                            <div id="precip-chart" class="plotly-graph-div" style="height:600px; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="chart-container weather-card">
+                        <h3><i class="bi bi-wind weather-icon"></i> Vent et Humidité</h3>
+                        <div class="chart">
+                            <div id="wind-humidity-chart" class="plotly-graph-div" style="height:600px; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="chart-container weather-card">
+                        <h3><i class="bi bi-thermometer-sun weather-icon"></i> Évolution Températures</h3>
+                        <div class="chart">
+                            <div id="temp-evolution-chart" class="plotly-graph-div" style="height:600px; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="chart-container weather-card">
+                        <h3><i class="bi bi-droplet-fill weather-icon"></i> Précipitations Mensuelles</h3>
+                        <div class="chart">
+                            <div id="precip-monthly-chart" class="plotly-graph-div" style="height:600px; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="chart-container weather-card">
+                        <h3><i class="bi bi-thermometer-half weather-icon"></i> Distribution Températures</h3>
+                        <div class="chart">
+                            <div id="temp-distribution-chart" class="plotly-graph-div" style="height:600px; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="chart-container weather-card">
+                        <h3><i class="bi bi-bar-chart weather-icon"></i> Tendances Annuelles</h3>
+                        <div class="chart">
+                            <div id="annual-trends-chart" class="plotly-graph-div" style="height:600px; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Graphs -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="chart-container weather-card">
+                        <h3><i class="bi bi-thermometer-high weather-icon"></i> Fréquence des Canicules</h3>
+                        <div class="chart">
+                            <div id="heatwave-chart" class="plotly-graph-div" style="height:600px; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="chart-container weather-card">
+                        <h3><i class="bi bi-wind weather-icon"></i> Rose des Vents</h3>
+                        <div class="chart">
+                            <div id="wind-rose-chart" class="plotly-graph-div" style="height:600px; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="chart-container weather-card">
+                        <h3><i class="bi bi-thermometer-half weather-icon"></i> Corrélation Température-Précipitations</h3>
+                        <div class="chart">
+                            <div id="temp-precip-correlation-chart" class="plotly-graph-div" style="height:600px; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="chart-container weather-card">
+                        <h3><i class="bi bi-cloud-sun weather-icon"></i> Résumé Saisonnier</h3>
+                        <div class="chart">
+                            <div id="seasonal-chart" class="plotly-graph-div" style="height:600px; width:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script>
+        // Weather Card Animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.weather-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.querySelector('.weather-icon').classList.add('text-warning');
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.querySelector('.weather-icon').classList.remove('text-warning');
+                });
+            });
+        });
+
+        // Plotly Charts
+        // Temperature Chart
+        Plotly.newPlot('temp-chart', [
+            {
+                line: { color: 'red' },
+                name: 'Température moy (°C)',
+                x: ['2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01', '2024-05-01', '2024-06-01', '2024-07-01', '2024-08-01', '2024-09-01', '2024-10-01', '2024-11-01', '2024-12-01', '2025-01-01', '2025-02-01', '2025-03-01', '2025-04-01'],
+                y: [9.3, 11.2, 12.4, 14.9, 17.4, 21.9, 25.8, 26.7, 20.0, 18.3, 13.3, 9.5, 10.0, 10.3, 12.0, 15.0],
+                type: 'scatter'
+            }
+        ], {
+            title: { text: 'Températures Moyennes à MARSEILLE' },
+            xaxis: { title: { text: 'Date' } },
+            yaxis: { title: { text: 'Température (°C)' } },
+            hovermode: 'x unified',
+            responsive: true
+        });
+
+        // Precipitation Chart
+        Plotly.newPlot('precip-chart', [
+            {
+                marker: { color: 'blue' },
+                name: 'Précipitations (mm)',
+                opacity: 0.5,
+                x: ['2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01', '2024-05-01', '2024-06-01', '2024-07-01', '2024-08-01', '2024-09-01', '2024-10-01', '2024-11-01', '2024-12-01', '2025-01-01', '2025-02-01', '2025-03-01', '2025-04-01'],
+                y: [36.2, 121.9, 188.5, 13.4, 31.5, 16.6, 10.0, 4.0, 130.4, 110.4, 53.6, 11.0, 41.0, 60.8, 111.9, 0.4],
+                type: 'bar'
+            }
+        ], {
+            title: { text: 'Précipitations à MARSEILLE' },
+            xaxis: { title: { text: 'Date' } },
+            yaxis: { title: { text: 'Précipitations (mm)' } },
+            hovermode: 'x unified',
+            responsive: true
+        });
+
+        // Wind and Humidity Chart
+        Plotly.newPlot('wind-humidity-chart', [
+            {
+                line: { color: 'green' },
+                name: 'Vitesse vent (km/h)',
+                x: ['2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01', '2024-05-01', '2024-06-01', '2024-07-01', '2024-08-01', '2024-09-01', '2024-10-01', '2024-11-01', '2024-12-01', '2025-01-01', '2025-02-01', '2025-03-01', '2025-04-01'],
+                y: [1.5, 1.7, 2.8, 2.8, 2.3, 2.3, 2.2, 1.9, 2.2, 2.1, 1.5, 1.7, 1.9, 1.7, 2.3, 2.0],
+                type: 'scatter',
+                xaxis: 'x',
+                yaxis: 'y'
+            },
+            {
+                line: { color: 'purple' },
+                name: 'Humidité (%)',
+                x: ['2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01', '2024-05-01', '2024-06-01', '2024-07-01', '2024-08-01', '2024-09-01', '2024-10-01', '2024-11-01', '2024-12-01', '2025-01-01', '2025-02-01', '2025-03-01', '2025-04-01'],
+                y: [77.0, 75.0, 72.0, 55.0, 66.0, 62.0, 53.0, 57.0, 66.0, 78.0, 77.0, 69.0, 75.0, 78.0, 69.0, 62.0],
+                type: 'scatter',
+                xaxis: 'x',
+                yaxis: 'y2'
+            }
+        ], {
+            xaxis: { anchor: 'y', domain: [0.0, 0.94] },
+            yaxis: { anchor: 'x', domain: [0.0, 1.0] },
+            yaxis2: { anchor: 'x', overlaying: 'y', side: 'right' },
+            title: { text: 'Vent et Humidité à MARSEILLE' },
+            hovermode: 'x unified',
+            responsive: true
+        });
+
+        // Temperature Evolution Chart
+        Plotly.newPlot('temp-evolution-chart', [
+            {
+                line: { color: 'orange' },
+                name: 'Temp Max',
+                x: ['2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01', '2024-05-01', '2024-06-01', '2024-07-01', '2024-08-01', '2024-09-01', '2024-10-01', '2024-11-01', '2024-12-01', '2025-01-01', '2025-02-01', '2025-03-01', '2025-04-01'],
+                y: [14.0, 16.3, 17.5, 20.7, 23.2, 28.0, 32.9, 33.7, 25.7, 23.1, 18.2, 14.6, 14.5, 15.0, 17.3, 20.8],
+                type: 'scatter'
+            },
+            {
+                line: { color: 'red' },
+                name: 'Temp Moyenne',
+                x: ['2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01', '2024-05-01', '2024-06-01', '2024-07-01', '2024-08-01', '2024-09-01', '2024-10-01', '2024-11-01', '2024-12-01', '2025-01-01', '2025-02-01', '2025-03-01', '2025-04-01'],
+                y: [9.3, 11.2, 12.4, 14.9, 17.4, 21.9, 25.8, 26.7, 20.0, 18.3, 13.3, 9.5, 10.0, 10.3, 12.0, 15.0],
+                type: 'scatter'
+            },
+            {
+                line: { color: 'blue' },
+                name: 'Temp Min',
+                x: ['2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01', '2024-05-01', '2024-06-01', '2024-07-01', '2024-08-01', '2024-09-01', '2024-10-01', '2024-11-01', '2024-12-01', '2025-01-01', '2025-02-01', '2025-03-01', '2025-04-01'],
+                y: [4.6, 6.0, 7.3, 9.0, 11.6, 15.8, 18.8, 19.8, 14.4, 13.6, 8.3, 4.4, 5.5, 5.7, 6.8, 9.2],
+                type: 'scatter'
+            }
+        ], {
+            title: { text: 'Évolution Températures à MARSEILLE' },
+            hovermode: 'x unified',
+            responsive: true
+        });
+
+        // Monthly Precipitation Chart
+        Plotly.newPlot('precip-monthly-chart', [
+            {
+                marker: { color: 'skyblue' },
+                x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                y: [77.2, 182.7, 300.4, 13.8, 31.5, 16.6, 10.0, 4.0, 130.4, 110.4, 53.6, 11.0],
+                type: 'bar'
+            }
+        ], {
+            title: { text: 'Précipitations mensuelles totales à MARSEILLE' },
+            xaxis: { title: { text: 'Mois' } },
+            yaxis: { title: { text: 'Précipitations (mm)' } },
+            responsive: true
+        });
+
+        // Temperature Distribution Chart
+        Plotly.newPlot('temp-distribution-chart', [
+            {
+                alignmentgroup: 'True',
+                boxpoints: 'all',
+                hovertemplate: 'Mois=%{x}<br>Temp moy=%{y}<extra></extra>',
+                marker: { color: '#636efa' },
+                name: '',
+                notched: false,
+                offsetgroup: '',
+                orientation: 'v',
+                showlegend: false,
+                x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4],
+                y: [9.3, 11.2, 12.4, 14.9, 17.4, 21.9, 25.8, 26.7, 20.0, 18.3, 13.3, 9.5, 10.0, 10.3, 12.0, 15.0],
+                type: 'box'
+            }
+        ], {
+            xaxis: { title: { text: 'Mois' } },
+            yaxis: { title: { text: 'Temp moy' } },
+            title: { text: 'Distribution des Températures Moyennes par Mois à MARSEILLE' },
+            boxmode: 'group',
+            responsive: true
+        });
+
+        // Annual Trends Chart
+        Plotly.newPlot('annual-trends-chart', [
+            {
+                line: { color: 'red' },
+                name: 'Temp Moy',
+                x: [2024, 2025],
+                y: [16.725, 11.825],
+                type: 'scatter'
+            },
+            {
+                line: { color: 'blue' },
+                name: 'Précipitations',
+                x: [2024, 2025],
+                y: [60.625, 53.525],
+                type: 'scatter'
+            },
+            {
+                line: { color: 'purple' },
+                name: 'Humidité',
+                x: [2024, 2025],
+                y: [67.25, 71.0],
+                type: 'scatter'
+            },
+            {
+                line: { color: 'green' },
+                name: 'Vent',
+                x: [2024, 2025],
+                y: [2.0833333333333335, 1.975],
+                type: 'scatter'
+            }
+        ], {
+            title: { text: 'Tendances annuelles moyennes à MARSEILLE' },
+            responsive: true
+        });
+
+        // Heatwave Frequency Chart
+        Plotly.newPlot('heatwave-chart', [
+            {
+                marker: { color: 'orange' },
+                name: 'Jours > 30°C',
+                x: ['Jan 2024', 'Feb 2024', 'Mar 2024', 'Apr 2024', 'May 2024', 'Jun 2024', 'Jul 2024', 'Aug 2024', 'Sep 2024', 'Oct 2024', 'Nov 2024', 'Dec 2024', 'Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025'],
+                y: [0, 0, 0, 0, 0, 2, 15, 20, 0, 0, 0, 0, 0, 0, 0, 0],
+                type: 'bar'
+            }
+        ], {
+            title: { text: 'Nombre de Jours de Canicule (>30°C) à MARSEILLE' },
+            xaxis: { title: { text: 'Mois' } },
+            yaxis: { title: { text: 'Nombre de Jours' } },
+            hovermode: 'x unified',
+            responsive: true
+        });
+
+        // Wind Rose Chart
+        Plotly.newPlot('wind-rose-chart', [
+            {
+                r: [1.5, 1.7, 2.8, 2.8, 2.3, 2.3, 2.2, 1.9, 2.2, 2.1, 1.5, 1.7, 1.9, 1.7, 2.3, 2.0],
+                theta: [0, 45, 90, 135, 180, 225, 270, 315, 0, 45, 90, 135, 180, 225, 270, 315],
+                type: 'barpolar',
+                marker: { color: 'green', opacity: 0.7 },
+                name: 'Vitesse du vent (km/h)'
+            }
+        ], {
+            title: { text: 'Rose des Vents à MARSEILLE (2024-2025)' },
+            polar: {
+                radialaxis: { title: { text: 'Vitesse (km/h)' } },
+                angularaxis: { direction: 'clockwise', rotation: 90 }
+            },
+            responsive: true
+        });
+
+        // Temperature vs Precipitation Correlation Chart
+        Plotly.newPlot('temp-precip-correlation-chart', [
+            {
+                x: [9.3, 11.2, 12.4, 14.9, 17.4, 21.9, 25.8, 26.7, 20.0, 18.3, 13.3, 9.5, 10.0, 10.3, 12.0, 15.0],
+                y: [36.2, 121.9, 188.5, 13.4, 31.5, 16.6, 10.0, 4.0, 130.4, 110.4, 53.6, 11.0, 41.0, 60.8, 111.9, 0.4],
+                mode: 'markers',
+                marker: { color: 'blue', size: 10 },
+                type: 'scatter',
+                name: 'Données'
+            },
+            {
+                x: [9.3, 26.7],
+                y: [150, 0],
+                mode: 'lines',
+                line: { color: 'red', dash: 'dash' },
+                name: 'Tendance'
+            }
+        ], {
+            title: { text: 'Corrélation Température vs Précipitations à MARSEILLE' },
+            xaxis: { title: { text: 'Température Moyenne (°C)' } },
+            yaxis: { title: { text: 'Précipitations (mm)' } },
+            hovermode: 'closest',
+            responsive: true
+        });
+
+        // Seasonal Summary Chart
+        Plotly.newPlot('seasonal-chart', [
+            {
+                x: ['Hiver 2024', 'Printemps 2024', 'Été 2024', 'Automne 2024', 'Hiver 2025', 'Printemps 2025'],
+                y: [10.0, 14.9, 24.8, 17.2, 10.15, 13.5],
+                name: 'Temp Moy (°C)',
+                type: 'bar',
+                marker: { color: 'red' }
+            },
+            {
+                x: ['Hiver 2024', 'Printemps 2024', 'Été 2024', 'Automne 2024', 'Hiver 2025', 'Printemps 2025'],
+                y: [80.2, 77.8, 10.2, 98.1, 50.9, 56.15],
+                name: 'Précipitations (mm)',
+                type: 'bar',
+                marker: { color: 'blue' }
+            },
+            {
+                x: ['Hiver 2024', 'Printemps 2024', 'Été 2024', 'Automne 2024', 'Hiver 2025', 'Printemps 2025'],
+                y: [73.7, 64.3, 57.3, 73.7, 74.0, 65.5],
+                name: 'Humidité (%)',
+                type: 'bar',
+                marker: { color: 'purple' }
+            }
+        ], {
+            title: { text: 'Résumé Saisonnier à MARSEILLE' },
+            xaxis: { title: { text: 'Saison' } },
+            yaxis: { title: { text: 'Valeur' } },
+            barmode: 'group',
+            responsive: true
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white pt-5 pb-4">
+        <div class="container">
+            <div class="row">
+                <!-- Informations étudiantes -->
+                <div class="col-lg-4 mb-4">
+                    <h5 class="text-uppercase mb-4" style="color: var(--accent-color);">
+                        <i class="bi bi-person-badge"></i> Informations étudiantes
+                    </h5>
+                    <div class="d-flex align-items-start mb-3">
+                        <i class="bi bi-mortarboard fs-4 me-3" style="color: var(--accent-color);"></i>
+                        <div>
+                            <h6 class="mb-0">Ameth Samb</h6>
+                            <p class="small mb-0">Master Géomatique et Modélisation Spatiale</p>
+                            <p class="small text-muted">Promotion 2024-2025</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-geo-alt fs-4 me-3" style="color: var(--accent-color);"></i>
+                        <div>
+                            <h6 class="mb-0">Localisation</h6>
+                            <p class="small mb-0">Marseille, France</p>
+                            <p class="small text-muted">Aix-Marseille Université</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carte de localisation -->
+                <div class="col-lg-4 mb-4">
+                    <h5 class="text-uppercase mb-4" style="color: var(--accent-color);">
+                        <i class="bi bi-geo"></i> Localisation Marseille
+                    </h5>
+                    <div class="ratio ratio-16x9">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d185912.72405217227!2d5.24084475!3d43.2803051!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12c9bf4344da5333%3A0x40819a5fd970220!2sMarseille!5e0!3m2!1sfr!2sfr!4v1715870000000!5m2!1sfr!2sfr" 
+                                style="border:0; border-radius: 8px;" 
+                                allowfullscreen="" 
+                                loading="lazy" 
+                                referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                </div>
+
+                <!-- Contact et réseaux -->
+                <div class="col-lg-4 mb-4">
+                    <h5 class="text-uppercase mb-4" style="color: var(--accent-color);">
+                        <i class="bi bi-send"></i> Contact
+                    </h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <a href="mailto:ameth.samb@etu.univ-amu.fr" class="text-white text-decoration-none">
+                                <i class="bi bi-envelope me-2"></i> ameth.samb@etu.univ-amu.fr
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://formations.univ-amu.fr/fr/master-geomatique-et-modelisation-spatiale" 
+                               class="text-white text-decoration-none" target="_blank">
+                                <i class="bi bi-book me-2"></i> Formation Master Géomatique
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
+
+            <!-- Copyright -->
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <p class="small mb-0">
+                        © 2024 Ameth Samb - Travail académique Master Géomatique
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="#top" class="text-white small me-3">
+                        <i class="bi bi-arrow-up-circle me-1"></i> Retour en haut
+                    </a>
+                    <a href="#" class="text-white small me-3">Mentions légales</a>
+                    <a href="#" class="text-white small">Confidentialité</a>
+                </div>
+            </div>
+        </div>
+    </footer>  
+</body>
+</html>
